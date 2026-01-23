@@ -1,0 +1,115 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userId() {
+      return request.auth.uid;
+    }
+
+    function profileExists() {
+      return exists(/databases/$(database)/documents/profiles/$(userId()));
+    }
+
+    function profile() {
+      return profileExists() ? get(/databases/$(database)/documents/profiles/$(userId())).data : null;
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && profileExists() && profile().role == role;
+    }
+
+    function isStaff() {
+      return isSignedIn() && profileExists() && (
+        profile().role == "supervisor" ||
+        profile().role == "case_manager" ||
+        profile().role == "admin"
+      );
+    }
+
+    function canReadClinicalNotes() {
+      return isSignedIn() && profileExists() && (profile().role == "case_manager" || profile().role == "admin");
+    }
+
+    match /profiles/{uid} {
+      // Users can read their own profile; admins can read any profile.
+      allow read: if isSignedIn() && (uid == userId() || (profileExists() && profile().role == "admin"));
+      // Users can create their own profile doc on signup.
+      allow create: if isSignedIn() && uid == userId();
+      // Users can update their own displayName but NOT role.
+      // Admins can update any profile (including role).
+      allow update: if isSignedIn() && (
+        // Self-update: can change displayName but NOT role.
+        (uid == userId() && (!exists(/databases/$(database)/documents/profiles/$(uid)) || request.resource.data.role == resource.data.role))
+        ||
+        // Admin update: can change anything including role.
+        (profileExists() && profile().role == "admin")
+      );
+      allow delete: if false;
+    }
+
+    match /participants/{participantId} {
+      allow read: if isStaff() || (isSignedIn() && resource.data.userId == userId());
+      allow create, update: if isStaff() || (isSignedIn() && profileExists() && profile().role == "admin");
+      allow delete: if hasRole("admin");
+
+      match /caseNotes/{noteId} {
+        allow read: if isStaff()
+          && (
+            resource.data.visibility == "general" ||
+            (resource.data.visibility in ["clinical", "private"] && canReadClinicalNotes())
+          );
+        allow create: if isStaff();
+        allow update, delete: if isStaff() && request.resource.data.authorUid == userId();
+      }
+
+      match /files/{fileId} {
+        allow read: if isStaff() || (isSignedIn() && get(/databases/$(database)/documents/participants/$(participantId)).data.userId == userId());
+        allow create: if isStaff();
+        allow update, delete: if hasRole("admin");
+      }
+    }
+
+    match /workLogs/{workLogId} {
+      allow read: if isStaff();
+      allow create: if isStaff();
+      allow update, delete: if hasRole("admin");
+
+      match /materials/{materialId} {
+        allow read: if isStaff();
+        allow create: if isStaff();
+        allow update, delete: if hasRole("admin");
+      }
+    }
+
+    match /alerts/{alertId} {
+      allow read: if isStaff();
+      allow create, update, delete: if isSignedIn() && profileExists() && profile().role == "admin";
+    }
+
+    match /helpRequests/{helpRequestId} {
+      allow read: if isStaff();
+      allow create: if isSignedIn() && profileExists() && profile().role == "participant";
+      allow update: if isStaff();
+      allow delete: if hasRole("admin");
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && resource.data.toUid == userId();
+      allow create: if isSignedIn() && profileExists() && profile().role == "admin";
+      allow update: if isSignedIn()
+        && resource.data.toUid == userId()
+        && request.resource.data.toUid == resource.data.toUid;
+      allow delete: if isSignedIn() && profileExists() && profile().role == "admin";
+    }
+
+    match /config/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && profileExists() && profile().role == "admin";
+    }
+  }
+}
+
