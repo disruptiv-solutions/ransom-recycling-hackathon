@@ -2,32 +2,23 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { upsertProfile } from "@/lib/auth/profile";
 import { getFirebaseAuth } from "@/lib/firebase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const signInSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
 });
 
-const signUpSchema = z.object({
-  displayName: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
 type SignInValues = z.infer<typeof signInSchema>;
-type SignUpValues = z.infer<typeof signUpSchema>;
 
 const getFriendlyAuthError = (err: unknown) => {
   if (err instanceof FirebaseError) {
@@ -66,11 +57,6 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const defaultSignInValues = useMemo<SignInValues>(() => ({ email: "", password: "" }), []);
-  const defaultSignUpValues = useMemo<SignUpValues>(
-    () => ({ displayName: "", email: "", password: "" }),
-    [],
-  );
-
   const signInForm = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: defaultSignInValues,
@@ -116,177 +102,70 @@ export default function LoginPage() {
     }
   });
 
-  const signUpForm = useForm<SignUpValues>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: defaultSignUpValues,
-    mode: "onSubmit",
-  });
-
-  const handleSignUp = signUpForm.handleSubmit(async (values) => {
-    setIsSubmitting(true);
-    setErrorMessage(null);
-    try {
-      const auth = getFirebaseAuth();
-      const credential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-      await updateProfile(credential.user, { displayName: values.displayName });
-
-      // Default self-signups to participant role (staff accounts should be created/admin-assigned).
-      await upsertProfile({
-        uid: credential.user.uid,
-        role: "participant",
-        email: values.email,
-        displayName: values.displayName,
-      });
-
-      const idToken = await credential.user.getIdToken();
-      await handleSessionLogin(idToken);
-
-      router.replace("/");
-      router.refresh();
-    } catch (err) {
-      setErrorMessage(getFriendlyAuthError(err));
-    } finally {
-      setIsSubmitting(false);
-    }
-  });
-
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+      <Card className="w-full max-w-md border-slate-200 shadow-sm">
         <CardHeader>
-          <CardTitle>BridgePath</CardTitle>
-          <CardDescription>Sign in or create an account.</CardDescription>
+          <CardTitle className="text-2xl">Ransom Recycling Operations</CardTitle>
+          <CardDescription>Sign in to continue.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signIn">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signIn">Sign in</TabsTrigger>
-              <TabsTrigger value="signUp">Create account</TabsTrigger>
-            </TabsList>
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="signInEmail" className="text-sm font-medium">
+                Email
+              </label>
+              <Input
+                id="signInEmail"
+                type="email"
+                autoComplete="email"
+                aria-label="Email"
+                placeholder="name@ransom.org"
+                {...signInForm.register("email")}
+              />
+              {signInForm.formState.errors.email?.message ? (
+                <p className="text-sm text-destructive" role="alert">
+                  {signInForm.formState.errors.email.message}
+                </p>
+              ) : null}
+            </div>
 
-            <TabsContent value="signIn" className="mt-4">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="signInEmail" className="text-sm font-medium">
-                    Email
-                  </label>
-                  <Input
-                    id="signInEmail"
-                    type="email"
-                    autoComplete="email"
-                    aria-label="Email"
-                    placeholder="name@org.org"
-                    {...signInForm.register("email")}
-                  />
-                  {signInForm.formState.errors.email?.message ? (
-                    <p className="text-sm text-destructive" role="alert">
-                      {signInForm.formState.errors.email.message}
-                    </p>
-                  ) : null}
-                </div>
+            <div className="space-y-2">
+              <label htmlFor="signInPassword" className="text-sm font-medium">
+                Password
+              </label>
+              <Input
+                id="signInPassword"
+                type="password"
+                autoComplete="current-password"
+                aria-label="Password"
+                placeholder="••••••••"
+                {...signInForm.register("password")}
+              />
+              {signInForm.formState.errors.password?.message ? (
+                <p className="text-sm text-destructive" role="alert">
+                  {signInForm.formState.errors.password.message}
+                </p>
+              ) : null}
+            </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="signInPassword" className="text-sm font-medium">
-                    Password
-                  </label>
-                  <Input
-                    id="signInPassword"
-                    type="password"
-                    autoComplete="current-password"
-                    aria-label="Password"
-                    placeholder="••••••••"
-                    {...signInForm.register("password")}
-                  />
-                  {signInForm.formState.errors.password?.message ? (
-                    <p className="text-sm text-destructive" role="alert">
-                      {signInForm.formState.errors.password.message}
-                    </p>
-                  ) : null}
-                </div>
+            {errorMessage ? (
+              <p className="text-sm text-destructive" role="alert">
+                {errorMessage}
+              </p>
+            ) : null}
 
-                {errorMessage ? (
-                  <p className="text-sm text-destructive" role="alert">
-                    {errorMessage}
-                  </p>
-                ) : null}
-
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Signing in..." : "Sign in"}
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signUp" className="mt-4">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="displayName" className="text-sm font-medium">
-                    Name
-                  </label>
-                  <Input
-                    id="displayName"
-                    type="text"
-                    autoComplete="name"
-                    aria-label="Name"
-                    placeholder="Marcus Johnson"
-                    {...signUpForm.register("displayName")}
-                  />
-                  {signUpForm.formState.errors.displayName?.message ? (
-                    <p className="text-sm text-destructive" role="alert">
-                      {signUpForm.formState.errors.displayName.message}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="signUpEmail" className="text-sm font-medium">
-                    Email
-                  </label>
-                  <Input
-                    id="signUpEmail"
-                    type="email"
-                    autoComplete="email"
-                    aria-label="Email"
-                    placeholder="name@org.org"
-                    {...signUpForm.register("email")}
-                  />
-                  {signUpForm.formState.errors.email?.message ? (
-                    <p className="text-sm text-destructive" role="alert">
-                      {signUpForm.formState.errors.email.message}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="signUpPassword" className="text-sm font-medium">
-                    Password
-                  </label>
-                  <Input
-                    id="signUpPassword"
-                    type="password"
-                    autoComplete="new-password"
-                    aria-label="Password"
-                    placeholder="Minimum 8 characters"
-                    {...signUpForm.register("password")}
-                  />
-                  {signUpForm.formState.errors.password?.message ? (
-                    <p className="text-sm text-destructive" role="alert">
-                      {signUpForm.formState.errors.password.message}
-                    </p>
-                  ) : null}
-                </div>
-
-                {errorMessage ? (
-                  <p className="text-sm text-destructive" role="alert">
-                    {errorMessage}
-                  </p>
-                ) : null}
-
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Creating account..." : "Create account"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Signing in..." : "Sign in"}
+            </Button>
+            <button
+              type="button"
+              className="w-full text-sm font-medium text-slate-500 hover:text-slate-700"
+              aria-label="Forgot password"
+            >
+              Forgot password?
+            </button>
+          </form>
         </CardContent>
       </Card>
     </div>

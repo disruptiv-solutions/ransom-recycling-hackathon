@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BridgePath",
-  description: "Unified Participant & Enterprise Tracker",
+  title: "Ransom Operations Platform",
+  description: "Recycling operations tracking and impact reporting",
 };
 
 export default function RootLayout({

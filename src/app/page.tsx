@@ -1,15 +1,14 @@
 import { redirect } from "next/navigation";
 
 import { getSessionProfile } from "@/lib/auth/session";
+import { isStaffRole } from "@/lib/auth/roles";
 
 export default async function Home() {
   const profile = await getSessionProfile();
   if (!profile) redirect("/login");
 
-  if (profile.role === "participant") redirect("/participant");
-  if (profile.role === "case_manager") redirect("/case-manager");
-  if (profile.role === "supervisor") redirect("/supervisor");
-  if (profile.role === "admin") redirect("/admin");
+  const hasStaffAccess = isStaffRole(profile.role) || isStaffRole(profile.originalRole);
+  if (!hasStaffAccess) redirect("/login");
 
-  redirect("/login");
+  redirect("/operations");
 }

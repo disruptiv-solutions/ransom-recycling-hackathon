@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { isStaffRole } from "@/lib/auth/roles";
 import { getSessionProfile } from "@/lib/auth/session";
 import { 
@@ -71,13 +72,18 @@ export default async function StaffLayoutBase({
       <aside className="hidden w-72 flex-col justify-between border-r border-border bg-card p-6 md:flex">
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-3 px-2">
-            <div className="rounded-lg bg-primary p-2 text-white">
-              <Leaf className="h-6 w-6" />
+            <div className="relative h-12 w-36">
+              <Image
+                src="/RANSOM.png"
+                alt="Ransom"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
             <div>
-              <h1 className="text-lg font-bold leading-tight">Growth Platform</h1>
               <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {profile.role.replace("_", " ")} Portal
+                Operations Portal
               </p>
             </div>
           </div>
@@ -137,10 +143,15 @@ export default async function StaffLayoutBase({
             <Menu className="h-6 w-6 text-foreground/70" />
           </Button>
           <div className="flex items-center gap-2">
-            <div className="rounded-lg bg-primary p-1.5 text-white">
-              <Leaf className="h-5 w-5" />
+            <div className="relative h-8 w-24">
+              <Image
+                src="/RANSOM.png"
+                alt="Ransom"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
-            <span className="font-bold text-foreground">Growth Platform</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
