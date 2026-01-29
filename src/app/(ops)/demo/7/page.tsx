@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 
 export default function DemoPage7() {
   const rows = [
@@ -563,6 +564,30 @@ export default function DemoPage7() {
           </div>
         </div>
       </div>
+
+      {/* Logos */}
+      <div className="absolute right-12 bottom-12 flex items-end gap-4 bg-white/95 p-8 rounded-[2.5rem] shadow-xl backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-1000">
+        <div className="flex items-end pr-2">
+          <Image
+            src="/ransom-new.png"
+            alt="Ransom Operations Platform"
+            width={280}
+            height={280}
+            className="h-32 w-auto object-contain"
+          />
+        </div>
+        <div className="w-px h-20 bg-slate-200/50 self-center" />
+        <div className="flex items-end pl-2 pb-2">
+          <Image
+            src="/hatchathon.png"
+            alt="Hatchathon"
+            width={300}
+            height={300}
+            className="h-24 w-auto object-contain"
+          />
+        </div>
+      </div>
+
       <style jsx>{`
         @keyframes scrollRows {
           0% {
