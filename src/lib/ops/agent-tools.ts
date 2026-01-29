@@ -1,5 +1,5 @@
 import { PipedreamClient } from "@pipedream/sdk";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { Client } from "@modelcontextprotocol/sdk/client";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 import { getServerEnv } from "@/lib/env/server";
