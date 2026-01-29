@@ -6,7 +6,11 @@ import { isStaffRole } from "@/lib/auth/roles";
 import { mapReport } from "@/lib/ops/firestore";
 import { ReportDetailClient } from "@/components/ops/reports/report-detail-client";
 
-export default async function ReportDetailPage({ params }: { params: Promise<{ reportId: string }> }) {
+export default async function ReportDetailEmbedPage({
+  params,
+}: {
+  params: Promise<{ reportId: string }>;
+}) {
   const profile = await getSessionProfile();
   if (!profile || !isStaffRole(profile.role)) {
     redirect("/login");

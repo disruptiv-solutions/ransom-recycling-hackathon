@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { getSessionProfile } from "@/lib/auth/session";
 import { isStaffRole } from "@/lib/auth/roles";
@@ -15,8 +16,10 @@ export default async function OpsLayout({ children }: { children: React.ReactNod
   const unreadAlertsCount = await getUnreadAlertCount();
 
   return (
-    <OpsLayoutClient profile={profile} unreadAlertsCount={unreadAlertsCount}>
-      {children}
-    </OpsLayoutClient>
+    <Suspense fallback={null}>
+      <OpsLayoutClient profile={profile} unreadAlertsCount={unreadAlertsCount}>
+        {children}
+      </OpsLayoutClient>
+    </Suspense>
   );
 }

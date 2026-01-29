@@ -36,12 +36,12 @@ export const Demo1Animation = () => {
     easing: Easing.out(Easing.quad),
   });
 
-  const quotePushIn = interpolate(frame, [330, 599], [1, 1.03], {
+  const quotePushIn = interpolate(frame, [150, 210], [1, 1.03], {
     extrapolateRight: "clamp",
     easing: Easing.inOut(Easing.sin),
   });
 
-  const attributionOpacity = interpolate(frame, [480, 560], [0, 1], {
+  const attributionOpacity = interpolate(frame, [180, 210], [0, 1], {
     extrapolateRight: "clamp",
   });
 

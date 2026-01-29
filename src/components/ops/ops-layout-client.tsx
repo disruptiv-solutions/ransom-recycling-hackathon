@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import type { SessionProfile } from "@/lib/auth/session";
 import { OpsNavbar } from "@/components/ops/ops-navbar";
@@ -18,15 +18,20 @@ type OpsLayoutClientProps = {
 export const OpsLayoutClient = ({ profile, unreadAlertsCount, children }: OpsLayoutClientProps) => {
   const [isAgentOpen, setIsAgentOpen] = useState(false);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const isDemoPage = pathname.startsWith("/demo/");
+  const isEmbedParam = searchParams.get("embed") === "true";
+  const isReportEmbed = (pathname.includes("/reports/") && pathname.endsWith("/embed")) || isEmbedParam;
 
   const handleToggleAgent = () => setIsAgentOpen((prev) => !prev);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 md:flex md:h-screen md:overflow-hidden">
-      <OpsSidebar profile={profile} isAgentOpen={isAgentOpen} onToggleAgent={handleToggleAgent} />
+      {!isReportEmbed ? (
+        <OpsSidebar profile={profile} isAgentOpen={isAgentOpen} onToggleAgent={handleToggleAgent} />
+      ) : null}
       <div className="flex min-h-screen flex-1 flex-col md:overflow-hidden">
-        {!isDemoPage ? (
+        {!isDemoPage && !isReportEmbed ? (
           <OpsNavbar 
             profile={profile} 
             unreadAlertsCount={unreadAlertsCount} 
