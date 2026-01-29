@@ -18,7 +18,13 @@ type SettingsPanelProps = {
 export const SettingsPanel = ({ materialPrices, users }: SettingsPanelProps) => {
   const [prices, setPrices] = useState(materialPrices);
   const [userList, setUserList] = useState(users);
-  const [newPrice, setNewPrice] = useState({ category: "", materialType: "", price: "" });
+  const [newPrice, setNewPrice] = useState({
+    category: "",
+    materialType: "",
+    pricePerUnit: "",
+    unit: "lb",
+    role: "processing",
+  });
   const [newUser, setNewUser] = useState({
     role: "supervisor",
     email: "",
@@ -31,7 +37,13 @@ export const SettingsPanel = ({ materialPrices, users }: SettingsPanelProps) => 
     const res = await fetch("/api/material-prices", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...newPrice, price: Number(newPrice.price) }),
+      body: JSON.stringify({
+        category: newPrice.category,
+        materialType: newPrice.materialType,
+        pricePerUnit: Number(newPrice.pricePerUnit),
+        unit: newPrice.unit,
+        role: newPrice.role,
+      }),
     });
     const data = await res.json();
     if (!res.ok || !data.ok) return;
@@ -40,12 +52,13 @@ export const SettingsPanel = ({ materialPrices, users }: SettingsPanelProps) => 
         id: data.id,
         category: newPrice.category,
         materialType: newPrice.materialType,
-        price: Number(newPrice.price),
-        unit: "lb",
+        pricePerUnit: Number(newPrice.pricePerUnit),
+        unit: newPrice.unit as "lb" | "each",
+        role: newPrice.role,
       },
       ...prev,
     ]);
-    setNewPrice({ category: "", materialType: "", price: "" });
+    setNewPrice({ category: "", materialType: "", pricePerUnit: "", unit: "lb", role: "processing" });
   };
 
   const handleUpdatePrice = async (id: string, updates: Partial<MaterialPrice>) => {
@@ -120,7 +133,7 @@ export const SettingsPanel = ({ materialPrices, users }: SettingsPanelProps) => 
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Settings</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Configs</p>
         <h1 className="mt-2 text-3xl font-semibold text-slate-900">System Configuration</h1>
       </div>
 
@@ -136,7 +149,7 @@ export const SettingsPanel = ({ materialPrices, users }: SettingsPanelProps) => 
               <CardTitle className="text-lg">Material Prices</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-3 md:grid-cols-4">
+              <div className="grid gap-3 md:grid-cols-5">
                 <Input
                   placeholder="Category"
                   value={newPrice.category}
@@ -148,13 +161,31 @@ export const SettingsPanel = ({ materialPrices, users }: SettingsPanelProps) => 
                   onChange={(event) => setNewPrice((prev) => ({ ...prev, materialType: event.target.value }))}
                 />
                 <Input
-                  placeholder="Price per lb"
+                  placeholder="Price per unit"
                   type="number"
                   min="0"
                   step="0.01"
-                  value={newPrice.price}
-                  onChange={(event) => setNewPrice((prev) => ({ ...prev, price: event.target.value }))}
+                  value={newPrice.pricePerUnit}
+                  onChange={(event) => setNewPrice((prev) => ({ ...prev, pricePerUnit: event.target.value }))}
                 />
+                <select
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                  value={newPrice.unit}
+                  onChange={(event) => setNewPrice((prev) => ({ ...prev, unit: event.target.value }))}
+                >
+                  <option value="lb">lb</option>
+                  <option value="each">each</option>
+                </select>
+                <select
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                  value={newPrice.role}
+                  onChange={(event) => setNewPrice((prev) => ({ ...prev, role: event.target.value }))}
+                >
+                  <option value="processing">Processing</option>
+                  <option value="sorting">Sorting</option>
+                  <option value="hammermill">Hammermill</option>
+                  <option value="truck">Truck</option>
+                </select>
                 <Button onClick={handleAddPrice}>Add Material</Button>
               </div>
 
@@ -165,13 +196,15 @@ export const SettingsPanel = ({ materialPrices, users }: SettingsPanelProps) => 
                       <th className="py-2">Category</th>
                       <th className="py-2">Material Type</th>
                       <th className="py-2">Price</th>
+                      <th className="py-2">Unit</th>
+                      <th className="py-2">Role</th>
                       <th className="py-2 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {prices.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="py-6 text-center text-sm text-slate-500">
+                        <td colSpan={6} className="py-6 text-center text-sm text-slate-500">
                           No material prices yet.
                         </td>
                       </tr>
@@ -180,7 +213,9 @@ export const SettingsPanel = ({ materialPrices, users }: SettingsPanelProps) => 
                         <tr key={price.id} className="border-t border-slate-100">
                           <td className="py-3">{price.category}</td>
                           <td className="py-3">{price.materialType}</td>
-                          <td className="py-3">${price.price.toFixed(2)} / lb</td>
+                          <td className="py-3">${price.pricePerUnit.toFixed(2)}</td>
+                          <td className="py-3">{price.unit}</td>
+                          <td className="py-3 capitalize">{price.role}</td>
                           <td className="py-3 text-right">
                             <EditPriceDialog price={price} onSave={handleUpdatePrice} />
                             <button
@@ -299,10 +334,12 @@ const EditPriceDialog = ({
 }) => {
   const [category, setCategory] = useState(price.category);
   const [materialType, setMaterialType] = useState(price.materialType);
-  const [priceValue, setPriceValue] = useState(String(price.price));
+  const [priceValue, setPriceValue] = useState(String(price.pricePerUnit));
+  const [unit, setUnit] = useState(price.unit);
+  const [role, setRole] = useState(price.role);
 
   const handleSave = () => {
-    onSave(price.id, { category, materialType, price: Number(priceValue) });
+    onSave(price.id, { category, materialType, pricePerUnit: Number(priceValue), unit, role });
   };
 
   return (
@@ -321,6 +358,24 @@ const EditPriceDialog = ({
           <Input value={category} onChange={(event) => setCategory(event.target.value)} />
           <Input value={materialType} onChange={(event) => setMaterialType(event.target.value)} />
           <Input type="number" value={priceValue} onChange={(event) => setPriceValue(event.target.value)} />
+          <select
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            value={unit}
+            onChange={(event) => setUnit(event.target.value as "lb" | "each")}
+          >
+            <option value="lb">lb</option>
+            <option value="each">each</option>
+          </select>
+          <select
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            value={role}
+            onChange={(event) => setRole(event.target.value)}
+          >
+            <option value="processing">Processing</option>
+            <option value="sorting">Sorting</option>
+            <option value="hammermill">Hammermill</option>
+            <option value="truck">Truck</option>
+          </select>
           <Button onClick={handleSave}>Save changes</Button>
         </div>
       </DialogContent>

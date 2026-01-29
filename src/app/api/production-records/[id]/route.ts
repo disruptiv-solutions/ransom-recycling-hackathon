@@ -11,6 +11,8 @@ const updateSchema = z.object({
   materialType: z.string().min(1).optional(),
   weight: z.number().min(0.1).optional(),
   productionDate: z.string().optional(),
+  customer: z.string().optional().nullable(),
+  containerType: z.string().optional().nullable(),
 });
 
 export const runtime = "nodejs";
@@ -37,6 +39,14 @@ export const PATCH = async (req: Request, context: { params: { id: string } }) =
     updates.productionDate = Timestamp.fromDate(new Date(parsed.data.productionDate));
   }
 
+  if (parsed.data.customer !== undefined) {
+    updates.customer = parsed.data.customer?.trim() || null;
+  }
+
+  if (parsed.data.containerType !== undefined) {
+    updates.containerType = parsed.data.containerType || null;
+  }
+
   const shouldRecalculate =
     parsed.data.materialCategory || parsed.data.materialType || typeof parsed.data.weight === "number";
 
@@ -48,6 +58,9 @@ export const PATCH = async (req: Request, context: { params: { id: string } }) =
     const weight = typeof parsed.data.weight === "number" ? parsed.data.weight : Number(existing.weight ?? 0);
 
     let value = 0;
+    let pricePerUnit = Number(existing.pricePerUnit ?? existing.price ?? 0);
+    let unit: "lb" | "each" = existing.unit === "each" ? "each" : "lb";
+    let role: string | undefined = typeof existing.role === "string" ? existing.role : undefined;
     const priceSnapshot = await db
       .collection("material_prices")
       .where("category", "==", category)
@@ -56,10 +69,17 @@ export const PATCH = async (req: Request, context: { params: { id: string } }) =
       .get();
 
     if (!priceSnapshot.empty) {
-      const price = Number(priceSnapshot.docs[0].data()?.price ?? 0);
-      value = Number((price * weight).toFixed(2));
+      const priceDoc = priceSnapshot.docs[0].data() ?? {};
+      pricePerUnit =
+        typeof priceDoc.pricePerUnit === "number" ? priceDoc.pricePerUnit : Number(priceDoc.price ?? 0);
+      unit = priceDoc.unit === "each" ? "each" : "lb";
+      role = typeof priceDoc.role === "string" ? priceDoc.role : role;
+      value = Number((pricePerUnit * weight).toFixed(2));
     }
     updates.value = value;
+    updates.pricePerUnit = pricePerUnit;
+    updates.unit = unit;
+    updates.role = role;
   }
 
   await db.doc(`production_records/${context.params.id}`).set(updates, { merge: true });

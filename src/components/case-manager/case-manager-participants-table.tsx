@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Search, ChevronDown, ChevronUp } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
 export type CaseManagerParticipantRow = {
   id: string;
@@ -61,6 +62,9 @@ export function CaseManagerParticipantsTable({
   const [isMounted, setIsMounted] = useState(false);
   const [isSavingSupervisor, setIsSavingSupervisor] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+
+  const pageSize = 50;
 
   useEffect(() => {
     setIsMounted(true);
@@ -74,6 +78,22 @@ export function CaseManagerParticipantsTable({
       return haystack.includes(q);
     });
   }, [query, tableRows]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, tableRows]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+
+  useEffect(() => {
+    if (page <= totalPages) return;
+    setPage(totalPages);
+  }, [page, totalPages]);
+
+  const startIndex = (page - 1) * pageSize;
+  const paginated = filtered.slice(startIndex, startIndex + pageSize);
+  const startLabel = filtered.length === 0 ? 0 : startIndex + 1;
+  const endLabel = startIndex + paginated.length;
 
   const shouldIgnoreRowNav = (target: EventTarget | null) => {
     if (!(target instanceof HTMLElement)) return false;
@@ -175,7 +195,7 @@ export function CaseManagerParticipantsTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((r) => {
+                {paginated.map((r) => {
                   const isExpanded = expandedParticipantId === r.id;
                   const isSavingThis = isSavingSupervisor === r.id;
                   return (
@@ -249,11 +269,13 @@ export function CaseManagerParticipantsTable({
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-center">{getIntakeBadge(r.intakeStatus)}</TableCell>
+                        <TableCell className="text-center">
+                          {getIntakeBadge(r.intakeStatus)}
+                        </TableCell>
                         <TableCell className="px-8 text-right">
                           <span className="text-xs font-bold text-muted-foreground">{r.createdAtLabel || "—"}</span>
                         </TableCell>
-                        <TableCell className="px-4 py-6 align-middle text-right">
+                        <TableCell className="px-4 py-6 align-middle text-right w-12">
                           <button
                             type="button"
                             className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card text-foreground shadow-sm transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary"
@@ -298,6 +320,17 @@ export function CaseManagerParticipantsTable({
                                     {r.displayName || "Unnamed Participant"}
                                   </p>
                                   <p className="truncate text-sm text-muted-foreground">{r.email || "No email on file"}</p>
+                                </div>
+
+                                <div className="flex shrink-0 flex-wrap gap-2">
+                                  <Link
+                                    href={`/case-manager/participants/${r.id}`}
+                                    className="inline-flex h-10 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-bold text-foreground shadow-sm transition-colors hover:bg-muted"
+                                    aria-label={`Open ${r.displayName || "participant"} overview`}
+                                    data-row-nav-ignore="true"
+                                  >
+                                    Open overview
+                                  </Link>
                                 </div>
                               </div>
 
@@ -368,6 +401,36 @@ export function CaseManagerParticipantsTable({
             </Table>
           </div>
 
+          <div className="flex flex-col gap-4 border-t border-border px-8 py-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              Showing {startLabel}-{endLabel} of {filtered.length} participants
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl font-bold"
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={page <= 1}
+              >
+                Previous
+              </Button>
+              <div className="flex items-center gap-1 px-2">
+                <span className="text-xs font-bold text-foreground">Page {page}</span>
+                <span className="text-xs font-bold text-muted-foreground">of {totalPages}</span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl font-bold"
+                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={page >= totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+
           {filtered.length === 0 ? (
             <div className="p-10 text-center">
               <p className="font-bold text-foreground">No assigned participants found.</p>
@@ -379,4 +442,3 @@ export function CaseManagerParticipantsTable({
     </div>
   );
 }
-

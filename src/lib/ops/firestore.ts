@@ -8,6 +8,7 @@ import type {
   Participant,
   ProductionRecord,
   ReadinessAssessment,
+  ReportResult,
   WorkLog,
 } from "@/lib/ops/types";
 
@@ -22,8 +23,9 @@ export const getUnreadAlertCount = async () => {
   const snapshot = await getFirebaseAdminDb()
     .collection("alerts")
     .where("isRead", "==", false)
+    .count()
     .get();
-  return snapshot.size;
+  return snapshot.data().count;
 };
 
 export const mapParticipant = (id: string, data: FirebaseFirestore.DocumentData): Participant => ({
@@ -35,6 +37,7 @@ export const mapParticipant = (id: string, data: FirebaseFirestore.DocumentData)
   currentPhase: Number(data.currentPhase ?? 0) as Participant["currentPhase"],
   categories: Array.isArray(data.categories) ? data.categories : [],
   status: (data.status ?? "active") as Participant["status"],
+  isMock: typeof data.isMock === "boolean" ? data.isMock : false,
   createdAt: normalizeTimestamp(data.createdAt),
   updatedAt: normalizeTimestamp(data.updatedAt),
 });
@@ -46,7 +49,9 @@ export const mapWorkLog = (id: string, data: FirebaseFirestore.DocumentData): Wo
   role: typeof data.role === "string" ? data.role : "Processing",
   hours: Number(data.hours ?? 0),
   notes: typeof data.notes === "string" ? data.notes : null,
+  tags: Array.isArray(data.tags) ? data.tags : [],
   workDate: normalizeTimestamp(data.workDate),
+  isMock: typeof data.isMock === "boolean" ? data.isMock : false,
   createdAt: normalizeTimestamp(data.createdAt),
   updatedAt: normalizeTimestamp(data.updatedAt),
 });
@@ -62,6 +67,12 @@ export const mapProductionRecord = (
   materialType: typeof data.materialType === "string" ? data.materialType : "Misc",
   weight: Number(data.weight ?? 0),
   value: Number(data.value ?? 0),
+  unit: data.unit === "each" ? "each" : "lb",
+  pricePerUnit: typeof data.pricePerUnit === "number" ? data.pricePerUnit : Number(data.price ?? 0),
+  role: typeof data.role === "string" ? data.role : undefined,
+  customer: typeof data.customer === "string" ? data.customer : null,
+  containerType: typeof data.containerType === "string" ? data.containerType : null,
+  isMock: typeof data.isMock === "boolean" ? data.isMock : false,
   productionDate: normalizeTimestamp(data.productionDate),
   createdAt: normalizeTimestamp(data.createdAt),
   updatedAt: normalizeTimestamp(data.updatedAt),
@@ -74,8 +85,11 @@ export const mapMaterialPrice = (
   id,
   category: typeof data.category === "string" ? data.category : "Components",
   materialType: typeof data.materialType === "string" ? data.materialType : "Misc",
-  price: Number(data.price ?? 0),
-  unit: "lb",
+  pricePerUnit: typeof data.pricePerUnit === "number" ? data.pricePerUnit : Number(data.price ?? 0),
+  unit: data.unit === "each" ? "each" : "lb",
+  role: typeof data.role === "string" ? data.role : "processing",
+  isActive: typeof data.isActive === "boolean" ? data.isActive : true,
+  effectiveDate: normalizeTimestamp(data.effectiveDate),
   createdAt: normalizeTimestamp(data.createdAt),
   updatedAt: normalizeTimestamp(data.updatedAt),
 });
@@ -113,4 +127,24 @@ export const mapAssessment = (
   assessment: typeof data.assessment === "string" ? data.assessment : "",
   recommendation: typeof data.recommendation === "string" ? data.recommendation : "",
   generatedAt: normalizeTimestamp(data.generatedAt),
+});
+
+export const mapReport = (id: string, data: FirebaseFirestore.DocumentData): ReportResult => ({
+  id,
+  title: typeof data.title === "string" ? data.title : "Report",
+  generatedAt: normalizeTimestamp(data.generatedAt) || new Date().toISOString(),
+  stats: typeof data.stats === "object" && data.stats !== null ? data.stats : {},
+  narrative: typeof data.narrative === "string" ? data.narrative : null,
+  stories: typeof data.stories === "string" ? data.stories : null,
+  charts: typeof data.charts === "string" ? data.charts : null,
+  chartConfigurations: Array.isArray(data.chartConfigurations) ? data.chartConfigurations : null,
+  visualizationSpecs: Array.isArray(data.visualizationSpecs) ? data.visualizationSpecs : null,
+  reportType: (data.reportType ?? "comprehensive") as ReportResult["reportType"],
+  startDate: typeof data.startDate === "string" ? data.startDate : new Date().toISOString(),
+  endDate: typeof data.endDate === "string" ? data.endDate : new Date().toISOString(),
+  includeNarrative: typeof data.includeNarrative === "boolean" ? data.includeNarrative : false,
+  includeStories: typeof data.includeStories === "boolean" ? data.includeStories : false,
+  includeCharts: typeof data.includeCharts === "boolean" ? data.includeCharts : false,
+  createdBy: typeof data.createdBy === "string" ? data.createdBy : null,
+  pdfNarrative: typeof data.pdfNarrative === "string" ? data.pdfNarrative : null,
 });

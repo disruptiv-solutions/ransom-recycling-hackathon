@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 import { getFirebaseAdminAuth, getFirebaseAdminDb } from "@/lib/firebase/admin";
 import type { AppRole } from "@/lib/auth/roles";
@@ -30,7 +31,7 @@ export const getSessionUser = async (): Promise<SessionUser | null> => {
   }
 };
 
-export const getSessionProfile = async (): Promise<SessionProfile | null> => {
+export const getSessionProfile = cache(async (): Promise<SessionProfile | null> => {
   const sessionUser = await getSessionUser();
   if (!sessionUser) return null;
 
@@ -60,7 +61,7 @@ export const getSessionProfile = async (): Promise<SessionProfile | null> => {
     originalRole,
     displayName: typeof data.displayName === "string" ? data.displayName : null,
   };
-};
+});
 
 export const clearSessionCookie = async () => {
   const cookieStore = await cookies();

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { AIOverview } from "@/components/ops/ai-overview";
 import { Pencil, Trash2 } from "lucide-react";
 
 import type { Participant, WorkLog } from "@/lib/ops/types";
@@ -24,6 +25,72 @@ export const WorkLogsHistory = ({ initialLogs, participants, isAdmin }: WorkLogs
   const [role, setRole] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [page, setPage] = useState(1);
+  const [aiOverview, setAiOverview] = useState<string>("");
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const fetchAIOverview = async () => {
+    setAiLoading(true);
+    try {
+      const response = await fetch("/api/work-logs-overview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filters: {
+            search,
+            participantId,
+            role,
+            dateRange: {
+              start: startDate || new Date(new Date().setDate(new Date().getDate() - 30)).toISOString(),
+              end: endDate || new Date().toISOString(),
+            },
+          },
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch AI overview");
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No reader");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const parsed = JSON.parse(line);
+            if (parsed.type === "data") {
+              setAiOverview(""); // Clear previous overview
+              setAiLoading(false);
+            } else if (parsed.type === "chunk") {
+              setAiOverview((prev) => prev + parsed.content);
+            }
+          } catch (e) {
+            console.error("Error parsing stream line", e);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch AI overview:", error);
+      setAiLoading(false);
+    }
+  };
+
+  // Initial fetch
+  useEffect(() => {
+    fetchAIOverview();
+  }, [search, participantId, role, startDate, endDate]);
+
+  const pageSize = 50;
 
   const filtered = useMemo(() => {
     return logs.filter((log) => {
@@ -38,6 +105,22 @@ export const WorkLogsHistory = ({ initialLogs, participants, isAdmin }: WorkLogs
       return matchesSearch && matchesParticipant && matchesRole && matchesStart && matchesEnd;
     });
   }, [logs, search, participantId, role, startDate, endDate]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, participantId, role, startDate, endDate, logs]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+
+  useEffect(() => {
+    if (page <= totalPages) return;
+    setPage(totalPages);
+  }, [page, totalPages]);
+
+  const startIndex = (page - 1) * pageSize;
+  const paginated = filtered.slice(startIndex, startIndex + pageSize);
+  const startLabel = filtered.length === 0 ? 0 : startIndex + 1;
+  const endLabel = startIndex + paginated.length;
 
   const handleUpdate = async (id: string, updates: Partial<WorkLog>) => {
     const res = await fetch(`/api/work-logs/${id}`, {
@@ -110,6 +193,13 @@ export const WorkLogsHistory = ({ initialLogs, participants, isAdmin }: WorkLogs
         </CardContent>
       </Card>
 
+      <AIOverview 
+        overview={aiOverview} 
+        loading={aiLoading} 
+        onRegenerate={fetchAIOverview} 
+        title="AI Insights - Staffing & Attendance"
+      />
+
       <Card className="border-slate-200">
         <CardHeader>
           <CardTitle className="text-lg">{filtered.length} Entries Found</CardTitle>
@@ -127,14 +217,14 @@ export const WorkLogsHistory = ({ initialLogs, participants, isAdmin }: WorkLogs
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {paginated.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-6 text-center text-sm text-slate-500">
                     No work logs found.
                   </td>
                 </tr>
               ) : (
-                filtered.map((log) => (
+                paginated.map((log) => (
                   <tr key={log.id} className="border-t border-slate-100">
                     <td className="py-3">{log.workDate ? formatShortDate(log.workDate) : "—"}</td>
                     <td className="py-3">{log.participantName}</td>
@@ -159,6 +249,34 @@ export const WorkLogsHistory = ({ initialLogs, participants, isAdmin }: WorkLogs
               )}
             </tbody>
           </table>
+          <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-slate-500">
+              Showing {startLabel}-{endLabel} of {filtered.length} entries
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={page <= 1}
+                aria-label="Previous page"
+              >
+                Previous
+              </Button>
+              <span className="text-xs font-semibold text-slate-600">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={page >= totalPages}
+                aria-label="Next page"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -189,7 +307,20 @@ const EditLogDialog = ({ log, onSave }: { log: WorkLog; onSave: (id: string, upd
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-slate-700">Role</label>
-            <Input className="mt-2" value={role} onChange={(event) => setRole(event.target.value)} />
+            <select
+              className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              value={role}
+              onChange={(event) => setRole(event.target.value)}
+              aria-label="Role"
+            >
+              {["Processing", "Sorting", "Hammermill", "Truck"].map(
+                (option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ),
+              )}
+            </select>
           </div>
           <div>
             <label className="text-sm font-medium text-slate-700">Hours</label>

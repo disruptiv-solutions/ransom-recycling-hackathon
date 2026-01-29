@@ -7,9 +7,10 @@ import { getSessionProfile } from "@/lib/auth/session";
 import { isStaffRole } from "@/lib/auth/roles";
 
 const updateSchema = z.object({
-  role: z.string().min(1).optional(),
+  role: z.enum(["Processing", "Sorting", "Hammermill", "Truck"]).optional(),
   hours: z.number().min(0.25).max(24).optional(),
   notes: z.string().optional().nullable(),
+  tags: z.array(z.string()).optional(),
   workDate: z.string().optional(),
 });
 

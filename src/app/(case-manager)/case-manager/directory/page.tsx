@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,27 +25,28 @@ import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PhaseBoard, Participant } from "@/components/staff/phase-board";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useDemoMode } from "@/lib/demo-mode";
 
 const MOCK_PARTICIPANTS: Participant[] = [
   { 
     id: "1", 
-    name: "Marcus Chen", 
+    name: "Amaya Johnson", 
     phase: "intake", 
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus", 
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Amaya", 
     riskLevel: "none", 
-    lastCheckIn: "2 days ago", 
+    lastCheckIn: "Today", 
     pulseEmoji: "😊", 
     missedHours: false,
-    weightLbs: 0,
-    totalHours: 4
+    weightLbs: 12,
+    totalHours: 6
   },
   { 
     id: "2", 
-    name: "Elena Rodriguez", 
+    name: "Elijah Brooks", 
     phase: "development", 
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena", 
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Elijah", 
     riskLevel: "low", 
-    lastCheckIn: "1 week ago", 
+    lastCheckIn: "2 days ago", 
     pulseEmoji: "😐", 
     missedHours: false,
     weightLbs: 85,
@@ -52,43 +54,106 @@ const MOCK_PARTICIPANTS: Participant[] = [
   },
   { 
     id: "3", 
-    name: "Sam Wilson", 
+    name: "Sofia Martinez", 
+    phase: "development", 
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sofia", 
+    riskLevel: "low", 
+    lastCheckIn: "1 week ago", 
+    pulseEmoji: "🙂", 
+    missedHours: false,
+    weightLbs: 120,
+    totalHours: 58
+  },
+  { 
+    id: "4", 
+    name: "Noah Evans", 
     phase: "readiness", 
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sam", 
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Noah", 
     riskLevel: "high", 
-    lastCheckIn: "Today", 
+    lastCheckIn: "Yesterday", 
     pulseEmoji: "😔", 
     missedHours: true,
     weightLbs: 310,
     totalHours: 115
   },
   { 
-    id: "4", 
-    name: "Alex Rivera", 
-    phase: "readiness", 
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex", 
+    id: "5", 
+    name: "Zoe Carter", 
+    phase: "intake", 
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe", 
     riskLevel: "none", 
-    lastCheckIn: "Yesterday", 
+    lastCheckIn: "3 days ago", 
+    pulseEmoji: "😊", 
+    missedHours: false,
+    weightLbs: 30,
+    totalHours: 14
+  },
+  { 
+    id: "6", 
+    name: "Aiden Wright", 
+    phase: "employed", 
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden", 
+    riskLevel: "none", 
+    lastCheckIn: "5 days ago", 
+    pulseEmoji: "🎉", 
+    missedHours: false,
+    weightLbs: 1200,
+    totalHours: 340
+  },
+  { 
+    id: "7", 
+    name: "Maya Patel", 
+    phase: "intake", 
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maya", 
+    riskLevel: "low", 
+    lastCheckIn: "Today", 
+    pulseEmoji: "🙂", 
+    missedHours: false,
+    weightLbs: 18,
+    totalHours: 9
+  },
+  { 
+    id: "8", 
+    name: "Lucas Nguyen", 
+    phase: "readiness", 
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas", 
+    riskLevel: "none", 
+    lastCheckIn: "1 week ago", 
     pulseEmoji: "😊", 
     missedHours: false,
     weightLbs: 450,
     totalHours: 120
   },
   { 
-    id: "5", 
-    name: "Jordan Smith", 
+    id: "9", 
+    name: "Grace Kim", 
+    phase: "readiness", 
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Grace", 
+    riskLevel: "high", 
+    lastCheckIn: "2 weeks ago", 
+    pulseEmoji: "😟", 
+    missedHours: true,
+    weightLbs: 260,
+    totalHours: 95
+  },
+  { 
+    id: "10", 
+    name: "Ethan Reynolds", 
     phase: "employed", 
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan", 
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ethan", 
     riskLevel: "none", 
-    lastCheckIn: "3 days ago", 
+    lastCheckIn: "Jan 10, 2026", 
     pulseEmoji: "🎉", 
     missedHours: false,
-    weightLbs: 1200,
-    totalHours: 340
+    weightLbs: 980,
+    totalHours: 280
   },
 ];
 
 const ParticipantDirectoryPage = () => {
+  const { isDemoMode } = useDemoMode();
+  const visibleParticipants = useMemo(() => (isDemoMode ? MOCK_PARTICIPANTS : []), [isDemoMode]);
+
   const getStatusBadge = (participant: Participant) => {
     if (participant.riskLevel === "high" || participant.missedHours) {
       return <Badge className="bg-red-100 text-red-700 border-none hover:bg-red-100">At Risk</Badge>;
@@ -144,7 +209,13 @@ const ParticipantDirectoryPage = () => {
         </div>
 
         <TabsContent value="kanban" className="mt-8 outline-none">
-          <PhaseBoard initialParticipants={MOCK_PARTICIPANTS} />
+          {visibleParticipants.length === 0 ? (
+            <div className="rounded-3xl border border-slate-100 bg-white p-10 text-center text-sm text-slate-500">
+              Demo mode is off. Enable demo mode to view mock participants.
+            </div>
+          ) : (
+            <PhaseBoard initialParticipants={visibleParticipants} />
+          )}
         </TabsContent>
 
         <TabsContent value="list" className="mt-8 outline-none">
@@ -162,7 +233,14 @@ const ParticipantDirectoryPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {MOCK_PARTICIPANTS.map((p) => (
+                    {visibleParticipants.length === 0 ? (
+                      <TableRow className="border-slate-50">
+                        <TableCell colSpan={5} className="px-8 py-10 text-center text-sm text-slate-500">
+                          Demo mode is off. Enable demo mode to view mock participants.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      visibleParticipants.map((p) => (
                       <TableRow key={p.id} className="border-slate-50 hover:bg-slate-50/50 transition-colors">
                         <TableCell className="px-8 py-6">
                           <div className="flex items-center gap-4">

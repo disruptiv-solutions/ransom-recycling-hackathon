@@ -5,12 +5,15 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { getFirebaseAdminDb } from "@/lib/firebase/admin";
 import { getSessionProfile } from "@/lib/auth/session";
 import { isStaffRole } from "@/lib/auth/roles";
+import { getServerDemoMode } from "@/lib/demo-mode-server";
+import { mapWorkLog } from "@/lib/ops/firestore";
 
 const createSchema = z.object({
   participantId: z.string().min(1),
-  role: z.string().min(1),
+  role: z.enum(["Processing", "Sorting", "Hammermill", "Truck"]),
   hours: z.number().min(0.25).max(24),
   notes: z.string().optional().nullable(),
+  tags: z.array(z.string()).optional(),
   workDate: z.string(),
 });
 
@@ -22,6 +25,7 @@ export const GET = async (req: Request) => {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 403 });
   }
 
+  const isDemoMode = await getServerDemoMode();
   const { searchParams } = new URL(req.url);
   const start = searchParams.get("start");
   const end = searchParams.get("end");
@@ -39,7 +43,8 @@ export const GET = async (req: Request) => {
   if (role) query = query.where("role", "==", role);
 
   const snapshot = await query.orderBy("workDate", "desc").get();
-  const workLogs = snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() ?? {}) }));
+  const mappedLogs = snapshot.docs.map((doc) => mapWorkLog(doc.id, doc.data()));
+  const workLogs = isDemoMode ? mappedLogs : mappedLogs.filter((log) => !log.isMock);
 
   return NextResponse.json({ ok: true, workLogs });
 };

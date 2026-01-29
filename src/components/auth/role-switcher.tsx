@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,7 @@ import {
   Briefcase,
   ChevronDown,
 } from "lucide-react";
+import { useDemoMode, setDemoMode } from "@/lib/demo-mode";
 
 interface RoleSwitcherProps {
   currentRole: string;
@@ -50,8 +51,29 @@ const roleConfig = [
 export const RoleSwitcher = ({ currentRole, isSuperAdmin }: RoleSwitcherProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const { isDemoMode } = useDemoMode();
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   if (!isSuperAdmin) return null;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!dropdownRef.current) return;
+      if (!dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen]);
 
   const currentRoleConfig = roleConfig.find((r) => r.role === currentRole);
 
@@ -76,7 +98,7 @@ export const RoleSwitcher = ({ currentRole, isSuperAdmin }: RoleSwitcherProps) =
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <Button
         variant="outline"
         size="sm"
@@ -133,6 +155,21 @@ export const RoleSwitcher = ({ currentRole, isSuperAdmin }: RoleSwitcherProps) =
                   </button>
                 );
               })}
+            </div>
+            <div className="border-t border-border bg-muted/30 px-3 py-3">
+              <label className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Demo Mode
+                <input
+                  type="checkbox"
+                  checked={isDemoMode}
+                  onChange={(event) => setDemoMode(event.target.checked)}
+                  aria-label="Toggle demo mode"
+                  className="h-4 w-4"
+                />
+              </label>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Show mock participants in directories.
+              </p>
             </div>
             <div className="border-t border-border bg-muted/30 px-3 py-2">
               <p className="text-[10px] text-muted-foreground">

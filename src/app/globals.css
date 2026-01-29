@@ -180,4 +180,91 @@
   .attention-pulse-amber {
     animation: attention-pulse 2s infinite;
   }
+
+  @media print {
+    @page {
+      margin: 20mm;
+      size: A4;
+    }
+    body {
+      background: white !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      font-size: 12pt;
+      width: 100%;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    aside, nav, header, .print\:hidden {
+      display: none !important;
+    }
+    main {
+      padding: 0 !important;
+      margin: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+    }
+    /* Fix layout wrappers that restrict height */
+    .flex.h-screen, [class*="h-screen"], [class*="overflow-hidden"] {
+      height: auto !important;
+      overflow: visible !important;
+      display: block !important;
+    }
+    .mx-auto {
+      max-width: none !important;
+    }
+    /* Document-like styling for print */
+    .rounded-3xl, .rounded-2xl {
+      border-radius: 4px !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: none !important;
+    }
+    [class*="rounded-[2rem]"] {
+      border-radius: 4px !important;
+      border: 1px solid #e2e8f0 !important;
+    }
+    .bg-slate-900, .bg-emerald-600, .bg-blue-600 {
+      color: black !important;
+      background: white !important;
+      border: 1px solid #000 !important;
+    }
+    .text-white, .text-emerald-100, .text-blue-100 {
+      color: black !important;
+    }
+    .shadow-2xl, .shadow-xl, .shadow-md, .shadow-sm {
+      box-shadow: none !important;
+    }
+    /* Document-like spacing */
+    .p-8, .p-10 {
+      padding: 15mm !important;
+    }
+    .gap-6, .gap-10 {
+      gap: 10mm !important;
+    }
+    /* Force page breaks for better document flow */
+    .impact-story-section {
+      page-break-before: always;
+      margin-top: 10mm;
+    }
+    .impact-card, .prose, .rounded-2xl, .rounded-3xl {
+      page-break-inside: avoid;
+      margin-bottom: 5mm;
+    }
+    h1, h2, h3 {
+      page-break-after: avoid;
+    }
+    /* Narrative styling for print */
+    .prose p {
+      font-size: 11pt !important;
+      line-height: 1.6 !important;
+      color: #333 !important;
+    }
+    /* Ensure SVGs fit on page */
+    svg {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+  }
 }

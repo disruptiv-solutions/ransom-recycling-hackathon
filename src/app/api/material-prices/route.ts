@@ -3,12 +3,15 @@ import { z } from "zod";
 import { FieldValue } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/admin";
+import { mapMaterialPrice } from "@/lib/ops/firestore";
 import { getSessionProfile } from "@/lib/auth/session";
 
 const createSchema = z.object({
   category: z.string().min(1),
   materialType: z.string().min(1),
-  price: z.number().min(0),
+  pricePerUnit: z.number().min(0),
+  unit: z.enum(["lb", "each"]).optional(),
+  role: z.string().min(1).optional(),
 });
 
 export const runtime = "nodejs";
@@ -20,7 +23,7 @@ export const GET = async () => {
   }
 
   const snapshot = await getFirebaseAdminDb().collection("material_prices").orderBy("category").get();
-  const prices = snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() ?? {}) }));
+  const prices = snapshot.docs.map((doc) => mapMaterialPrice(doc.id, doc.data()));
   return NextResponse.json({ ok: true, prices });
 };
 
@@ -40,7 +43,8 @@ export const POST = async (req: Request) => {
   await docRef.set(
     {
       ...parsed.data,
-      unit: "lb",
+      unit: parsed.data.unit ?? "lb",
+      role: parsed.data.role ?? "processing",
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     },

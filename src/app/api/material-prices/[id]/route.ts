@@ -8,7 +8,9 @@ import { getSessionProfile } from "@/lib/auth/session";
 const updateSchema = z.object({
   category: z.string().min(1).optional(),
   materialType: z.string().min(1).optional(),
-  price: z.number().min(0).optional(),
+  pricePerUnit: z.number().min(0).optional(),
+  unit: z.enum(["lb", "each"]).optional(),
+  role: z.string().min(1).optional(),
 });
 
 export const runtime = "nodejs";

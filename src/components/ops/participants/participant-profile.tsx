@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ParticipantForm } from "@/components/ops/participants/participant-form";
+import { ParticipantIntelligence } from "@/components/ops/participants/participant-intelligence";
 
 type ParticipantProfileProps = {
   participant: Participant;
@@ -131,6 +132,12 @@ export const ParticipantProfile = ({
           </DialogContent>
         </Dialog>
       </div>
+
+      <ParticipantIntelligence 
+        participantId={participant.id} 
+        participantName={participant.name}
+        currentDay={metrics.daysInPhase}
+      />
 
       <Card className="border-slate-200">
         <CardContent className="space-y-4 p-6">

@@ -130,7 +130,7 @@ export default async function StaffHomePage() {
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100 md:text-3xl">Command Center</h2>
-          <p className="text-sm text-slate-500 md:text-base">Welcome back, Sarah.</p>
+          <p className="text-sm text-slate-500 md:text-base">Welcome back, {profile.displayName || "Staff"}.</p>
         </div>
         
         <div className="flex items-center gap-4">
@@ -155,8 +155,8 @@ export default async function StaffHomePage() {
             </div>
             <NotificationPopover />
             <Avatar className="h-12 w-12 border-2 border-primary">
-               <AvatarImage src="https://lh3.googleusercontent.com/aida-public/AB6AXuCS3WHWORbDSdG6Ch8KogTi49Vo6w-7_hqQpiK_RfCRhr88n7N0hNH62yV3u0u848dG_6rs9lPlxj4ZljsY-qmifZ30rqXyDQhBbVosbXQvSwkrPlM3UHqJdHss_6PUBT8nA_AQ28rZtcuU0dXqYNQmRGN932jd-3aT-oaglIm5JC0NRb5GSLzu8rOyI-JfvKTQnWxCka4-VBsLnRdt63lUQ23c66hrURytyHnOYQ5vs8NbzDNFd_ZLlvVLzuXSEQ8L--Jk4KxyqA" />
-               <AvatarFallback>SM</AvatarFallback>
+               <AvatarImage src={profile.photoURL || undefined} />
+               <AvatarFallback>{profile.displayName?.substring(0, 2) || "ST"}</AvatarFallback>
             </Avatar>
           </div>
         </div>
@@ -291,4 +291,3 @@ export default async function StaffHomePage() {
     </div>
   );
 }
-

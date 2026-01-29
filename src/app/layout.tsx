@@ -15,6 +15,36 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Ransom Operations Platform",
   description: "Recycling operations tracking and impact reporting",
+  manifest: "/site.webmanifest",
+  themeColor: "#4a7c2c",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Ransom Ops",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon_io (7)/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon_io (7)/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/favicon_io (7)/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      {
+        rel: "android-chrome-192x192",
+        url: "/favicon_io (7)/android-chrome-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        rel: "android-chrome-512x512",
+        url: "/favicon_io (7)/android-chrome-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -25,6 +55,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/favicon_io (7)/favicon.ico" sizes="any" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#4a7c2c" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Ransom Ops" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

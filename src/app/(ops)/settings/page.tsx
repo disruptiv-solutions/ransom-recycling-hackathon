@@ -17,7 +17,15 @@ export default async function SettingsPage() {
   ]);
 
   const materialPrices = pricesSnap.docs.map((doc) => mapMaterialPrice(doc.id, doc.data()));
-  const users = usersSnap.docs.map((doc) => ({ uid: doc.id, ...(doc.data() ?? {}) }));
+  const users = usersSnap.docs.map((doc) => {
+    const data = doc.data() ?? {};
+    return {
+      uid: doc.id,
+      displayName: typeof data.displayName === "string" ? data.displayName : undefined,
+      email: typeof data.email === "string" ? data.email : undefined,
+      role: typeof data.role === "string" ? data.role : undefined,
+    };
+  });
 
   return <SettingsPanel materialPrices={materialPrices} users={users} />;
 }

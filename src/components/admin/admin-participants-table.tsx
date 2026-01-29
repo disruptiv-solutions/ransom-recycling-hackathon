@@ -100,6 +100,9 @@ export function AdminParticipantsTable({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSavingAssignments, setIsSavingAssignments] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+
+  const pageSize = 50;
 
   useEffect(() => {
     setIsMounted(true);
@@ -122,22 +125,38 @@ export function AdminParticipantsTable({
     });
   }, [query, tableRows]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [query, tableRows]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+
+  useEffect(() => {
+    if (page <= totalPages) return;
+    setPage(totalPages);
+  }, [page, totalPages]);
+
+  const startIndex = (page - 1) * pageSize;
+  const paginated = filtered.slice(startIndex, startIndex + pageSize);
+  const startLabel = filtered.length === 0 ? 0 : startIndex + 1;
+  const endLabel = startIndex + paginated.length;
+
   const selectedInView = useMemo(() => {
     const set = selectedIds;
-    return filtered.filter((r) => set.has(r.id)).map((r) => r.id);
-  }, [filtered, selectedIds]);
+    return paginated.filter((r) => set.has(r.id)).map((r) => r.id);
+  }, [paginated, selectedIds]);
 
-  const isAllInViewSelected = filtered.length > 0 && selectedInView.length === filtered.length;
-  const isSomeInViewSelected = selectedInView.length > 0 && selectedInView.length < filtered.length;
+  const isAllInViewSelected = paginated.length > 0 && selectedInView.length === paginated.length;
+  const isSomeInViewSelected = selectedInView.length > 0 && selectedInView.length < paginated.length;
 
   const handleToggleAllInView = (next: boolean) => {
     setSelectedIds((prev) => {
       const nextSet = new Set(prev);
       if (!next) {
-        filtered.forEach((r) => nextSet.delete(r.id));
+        paginated.forEach((r) => nextSet.delete(r.id));
         return nextSet;
       }
-      filtered.forEach((r) => nextSet.add(r.id));
+      paginated.forEach((r) => nextSet.add(r.id));
       return nextSet;
     });
   };
@@ -318,7 +337,7 @@ export function AdminParticipantsTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((r) => {
+                {paginated.map((r) => {
                   const isAssigned = Boolean(r.caseManagerName) && Boolean(r.supervisorName);
                   const isSelected = selectedIds.has(r.id);
                   const isSavingThis = isSavingAssignments === r.id;
@@ -616,6 +635,36 @@ export function AdminParticipantsTable({
             </Table>
           </div>
 
+          <div className="flex flex-col gap-4 border-t border-border px-8 py-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              Showing {startLabel}-{endLabel} of {filtered.length} participants
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl font-bold"
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={page <= 1}
+              >
+                Previous
+              </Button>
+              <div className="flex items-center gap-1 px-2">
+                <span className="text-xs font-bold text-foreground">Page {page}</span>
+                <span className="text-xs font-bold text-muted-foreground">of {totalPages}</span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl font-bold"
+                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={page >= totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+
           {filtered.length === 0 ? (
             <div className="p-10 text-center">
               <p className="font-bold text-foreground">No participants found.</p>
@@ -681,4 +730,3 @@ export function AdminParticipantsTable({
     </div>
   );
 }
-

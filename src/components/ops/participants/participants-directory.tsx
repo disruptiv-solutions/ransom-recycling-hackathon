@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import type { Participant } from "@/lib/ops/types";
 import { formatShortDate } from "@/lib/ops/date";
+import { useDemoMode } from "@/lib/demo-mode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,15 +18,38 @@ export const ParticipantsDirectory = ({ participants }: ParticipantsDirectoryPro
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [phase, setPhase] = useState("all");
+  const [page, setPage] = useState(1);
+  const { isDemoMode } = useDemoMode();
+
+  const pageSize = 50;
 
   const filtered = useMemo(() => {
-    return participants.filter((participant) => {
+    const visibleParticipants = isDemoMode 
+      ? participants.filter(p => p.name !== "Unknown") // Filter out Unknown in demo mode
+      : participants.filter((participant) => !participant.isMock && participant.name !== "Unknown"); // Filter out mock and Unknown in real mode
+    return visibleParticipants.filter((participant) => {
       const matchesSearch = participant.name.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = status === "all" || participant.status === status;
       const matchesPhase = phase === "all" || participant.currentPhase === Number(phase);
       return matchesSearch && matchesStatus && matchesPhase;
     });
-  }, [participants, search, status, phase]);
+  }, [participants, isDemoMode, search, status, phase]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, status, phase, isDemoMode, participants]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+
+  useEffect(() => {
+    if (page <= totalPages) return;
+    setPage(totalPages);
+  }, [page, totalPages]);
+
+  const startIndex = (page - 1) * pageSize;
+  const paginated = filtered.slice(startIndex, startIndex + pageSize);
+  const startLabel = filtered.length === 0 ? 0 : startIndex + 1;
+  const endLabel = startIndex + paginated.length;
 
   return (
     <div className="space-y-6">
@@ -90,14 +114,14 @@ export const ParticipantsDirectory = ({ participants }: ParticipantsDirectoryPro
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {paginated.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-6 text-center text-sm text-slate-500">
                     No participants found.
                   </td>
                 </tr>
               ) : (
-                filtered.map((participant) => (
+                paginated.map((participant) => (
                   <tr key={participant.id} className="border-t border-slate-100">
                     <td className="py-3 font-medium text-slate-900">{participant.name}</td>
                     <td className="py-3">Phase {participant.currentPhase}</td>
@@ -115,6 +139,34 @@ export const ParticipantsDirectory = ({ participants }: ParticipantsDirectoryPro
               )}
             </tbody>
           </table>
+          <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-slate-500">
+              Showing {startLabel}-{endLabel} of {filtered.length} participants
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={page <= 1}
+                aria-label="Previous page"
+              >
+                Previous
+              </Button>
+              <span className="text-xs font-semibold text-slate-600">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={page >= totalPages}
+                aria-label="Next page"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

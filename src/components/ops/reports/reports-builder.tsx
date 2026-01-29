@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Trash2, FileText } from "lucide-react";
 
 import type { ReportResult } from "@/lib/ops/types";
 import { formatDisplayDate } from "@/lib/ops/date";
@@ -16,14 +18,28 @@ const reportTypes = [
 ];
 
 export const ReportsBuilder = () => {
+  const router = useRouter();
   const [reportType, setReportType] = useState("comprehensive");
   const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10));
   const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10));
   const [includeNarrative, setIncludeNarrative] = useState(true);
   const [includeStories, setIncludeStories] = useState(true);
-  const [includeCharts, setIncludeCharts] = useState(false);
+  const [includeCharts, setIncludeCharts] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [report, setReport] = useState<ReportResult | null>(null);
+  const [reports, setReports] = useState<ReportResult[]>([]);
+  const [loadingReports, setLoadingReports] = useState(true);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      const res = await fetch("/api/reports");
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setReports(data.reports || []);
+      }
+      setLoadingReports(false);
+    };
+    fetchReports();
+  }, []);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -41,10 +57,22 @@ export const ReportsBuilder = () => {
     });
 
     const data = await res.json();
-    if (res.ok && data.ok) {
-      setReport(data.report);
+    if (res.ok && data.ok && data.reportId) {
+      router.push(`/reports/${data.reportId}`);
     }
     setLoading(false);
+  };
+
+  const handleDelete = async (reportId: string) => {
+    if (!confirm("Are you sure you want to delete this report?")) return;
+
+    const res = await fetch(`/api/reports/${reportId}`, {
+      method: "DELETE",
+    });
+
+    if (res.ok) {
+      setReports((prev) => prev.filter((r) => r.id !== reportId));
+    }
   };
 
   return (
@@ -112,40 +140,56 @@ export const ReportsBuilder = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200">
-          <CardHeader>
-            <CardTitle className="text-lg">Report Preview</CardTitle>
+        <Card className="border-slate-200 flex flex-col h-[calc(100vh-220px)]">
+          <CardHeader className="shrink-0">
+            <CardTitle className="text-lg">Past Reports</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {!report ? (
-              <p className="text-sm text-slate-500">Generate a report to preview the output.</p>
+          <CardContent className="flex-1 overflow-y-auto min-h-0 pr-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+            {loadingReports ? (
+              <p className="text-sm text-slate-500">Loading reports...</p>
+            ) : reports.length === 0 ? (
+              <p className="text-sm text-slate-500">No reports generated yet. Generate your first report to get started.</p>
             ) : (
-              <div className="space-y-4 text-sm text-slate-700">
-                <div>
-                  <p className="text-lg font-semibold text-slate-900">{report.title}</p>
-                  <p className="text-xs text-slate-500">Generated {formatDisplayDate(report.generatedAt)}</p>
-                </div>
-                <div className="space-y-2">
-                  {Object.entries(report.stats).map(([key, value]) => {
-                    const displayValue =
-                      typeof value === "object" && value !== null ? JSON.stringify(value) : String(value);
-                    return (
-                    <div key={key} className="flex items-center justify-between border-b border-slate-100 py-2">
-                      <span className="capitalize">{key.replace(/_/g, " ")}</span>
-                      <span className="font-semibold text-slate-900">{displayValue}</span>
+              <div className="space-y-3 pb-4">
+                {reports.map((report) => {
+                  const generatedAt = report.generatedAt || new Date().toISOString();
+                  const reportTypeLabel =
+                    report.reportType === "production"
+                      ? "Production"
+                      : report.reportType === "outcomes"
+                        ? "Outcomes"
+                        : report.reportType === "environmental"
+                          ? "Environmental"
+                          : "Comprehensive";
+                  return (
+                    <div
+                      key={report.id}
+                      className="group flex items-center justify-between rounded-lg border border-slate-200 p-4 hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <FileText className="h-5 w-5 text-slate-400 mt-0.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <button
+                            onClick={() => report.id && router.push(`/reports/${report.id}`)}
+                            className="text-left w-full"
+                          >
+                            <p className="font-semibold text-slate-900 truncate">{report.title}</p>
+                            <p className="text-xs text-slate-500 mt-1">
+                              {formatDisplayDate(generatedAt)} • {reportTypeLabel}
+                            </p>
+                          </button>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => report.id && handleDelete(report.id)}
+                        className="ml-3 p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors shrink-0"
+                        aria-label="Delete report"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
-                  )})}
-                </div>
-                {report.narrative ? (
-                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700 whitespace-pre-line">
-                    {report.narrative}
-                  </div>
-                ) : null}
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline">Download PDF</Button>
-                  <Button variant="outline">Copy to Clipboard</Button>
-                  <Button variant="outline">Email Report</Button>
-                </div>
+                  );
+                })}
               </div>
             )}
           </CardContent>

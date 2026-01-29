@@ -10,6 +10,7 @@ export type Participant = {
   currentPhase: ParticipantPhase;
   categories: string[];
   status: ParticipantStatus;
+  isMock?: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
 };
@@ -22,6 +23,8 @@ export type WorkLog = {
   hours: number;
   notes?: string | null;
   workDate: string | null;
+  isMock?: boolean;
+  tags?: string[];
   createdAt?: string | null;
   updatedAt?: string | null;
 };
@@ -34,6 +37,12 @@ export type ProductionRecord = {
   materialType: string;
   weight: number;
   value: number;
+  unit?: "lb" | "each";
+  pricePerUnit?: number;
+  role?: string;
+  customer?: string | null;
+  containerType?: string | null;
+  isMock?: boolean;
   productionDate: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -43,8 +52,11 @@ export type MaterialPrice = {
   id: string;
   category: string;
   materialType: string;
-  price: number;
-  unit: "lb";
+  pricePerUnit: number;
+  unit: "lb" | "each";
+  role: string;
+  isActive?: boolean;
+  effectiveDate?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 };
@@ -95,9 +107,46 @@ export type ReportConfig = {
   includeCharts: boolean;
 };
 
+export type ChartConfiguration = {
+  type: "bar" | "line" | "pie" | "area" | "donut";
+  title: string;
+  description: string;
+  data: Array<{ name: string; value: number; [key: string]: string | number }>;
+  xAxisKey?: string;
+  yAxisKey?: string;
+  colors?: string[];
+};
+
+export type VisualizationSpecType =
+  | "icon_progression"
+  | "impact_equivalence"
+  | "revenue_progress"
+  | "custom_infographic";
+
+export type VisualizationSpec = {
+  type: VisualizationSpecType;
+  title: string;
+  subtitle?: string | null;
+  annotations?: string[];
+  data: Record<string, number | string>;
+};
+
 export type ReportResult = {
+  id?: string;
   title: string;
   generatedAt: string;
   stats: Record<string, string | number>;
   narrative?: string | null;
+  stories?: string | null;
+  charts?: string | null;
+  chartConfigurations?: ChartConfiguration[];
+  visualizationSpecs?: VisualizationSpec[] | null;
+  reportType: "production" | "outcomes" | "environmental" | "comprehensive";
+  startDate: string;
+  endDate: string;
+  includeNarrative: boolean;
+  includeStories: boolean;
+  includeCharts: boolean;
+  createdBy?: string | null;
+  pdfNarrative?: string | null;
 };
