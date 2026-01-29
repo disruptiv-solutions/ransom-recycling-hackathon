@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 
 export default function DemoPage7() {
   const rows = [
@@ -21,8 +20,6 @@ export default function DemoPage7() {
     { text: "New milestone achieved for 12 participants.", tone: "bg-emerald-50 text-emerald-900", delayMs: 890 },
     { text: "Narrative summary drafted from hours data.", tone: "bg-blue-50 text-blue-900", delayMs: 1050 },
     { text: "At-risk participation trend stabilized week-over-week.", tone: "bg-rose-50 text-rose-900", delayMs: 1230 },
-    { text: "Shift coverage gaps reduced by 18%.", tone: "bg-violet-50 text-violet-900", delayMs: 1410 },
-    { text: "Eligibility flags synced for upcoming grant cycle.", tone: "bg-slate-100 text-slate-700", delayMs: 1580 },
   ];
   const insightCards = [
     { label: "Wages earned", value: "$205", tone: "bg-white text-slate-900", span: "col-span-3" },
@@ -152,7 +149,7 @@ export default function DemoPage7() {
               </div>
               <div className="mt-6 grid grid-cols-2 gap-6">
               {isTimeReductionActive ? (
-                <div className="relative w-full rounded-2xl border border-slate-200/70 bg-white/80 p-6 overflow-hidden min-h-[620px]">
+                <div className="relative w-full rounded-2xl border border-slate-200/70 bg-white/80 p-6 overflow-hidden h-[620px]">
                   <div className="text-xs font-bold uppercase tracking-wider text-white/60">
                     Admin paperwork
                   </div>
@@ -188,21 +185,21 @@ export default function DemoPage7() {
                   </div>
                 </div>
               ) : isGutFeelActive ? (
-                <div className="relative w-full rounded-2xl border border-slate-200/70 bg-white/80 p-6 overflow-hidden min-h-[620px] flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-xs font-bold uppercase tracking-wider text-white/60">
+                <div className="relative w-full rounded-2xl border border-slate-200/70 bg-white/80 p-6 overflow-hidden h-[620px] flex items-center justify-center">
+                  <div className="text-center px-4">
+                    <div className="text-xs font-bold uppercase tracking-wider text-white/60 mb-6">
                       Gut feel
                     </div>
-                    <div className="mt-8 text-[140px] leading-none drop-shadow-sm animate-gut">
+                    <div className="text-[100px] leading-none drop-shadow-sm animate-gut mb-6">
                       🫃
                     </div>
-                    <div className="mt-6 text-sm font-semibold text-slate-500">
+                    <div className="text-sm font-semibold text-slate-500">
                       Intuition replaced with measurable signals.
                     </div>
                   </div>
                 </div>
               ) : isReportsActive ? (
-                <div className="relative w-full rounded-2xl border border-slate-200/70 bg-white/80 p-6 overflow-hidden min-h-[620px] flex items-center justify-center">
+                <div className="relative w-full rounded-2xl border border-slate-200/70 bg-white/80 p-6 overflow-hidden h-[620px] flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-xs font-bold uppercase tracking-wider text-white/60">
                       Hours for reports
@@ -216,7 +213,7 @@ export default function DemoPage7() {
                   </div>
                 </div>
               ) : isSlipActive ? (
-                <div className="relative w-full rounded-2xl border border-slate-200/70 bg-white/80 p-6 overflow-hidden min-h-[620px]">
+                <div className="relative w-full rounded-2xl border border-slate-200/70 bg-white/80 p-6 overflow-hidden h-[620px]">
                   <div className="text-xs font-bold uppercase tracking-wider text-white/60">
                     Coverage gaps
                   </div>
@@ -241,7 +238,7 @@ export default function DemoPage7() {
                   </div>
                 </div>
               ) : isRoleTrackingActive ? (
-                <div className="relative w-full rounded-2xl border border-slate-200/70 bg-white/80 p-6 overflow-hidden min-h-[620px]">
+                <div className="relative w-full rounded-2xl border border-slate-200/70 bg-white/80 p-6 overflow-hidden h-[620px]">
                   <div className="text-xs font-bold uppercase tracking-wider text-white/60">
                     Phases
                   </div>
@@ -257,8 +254,8 @@ export default function DemoPage7() {
                   </div>
                 </div>
               ) : (
-              <div className="w-full bg-white rounded-lg shadow-2xl border-4 border-[#217346] overflow-hidden">
-                <div className="bg-[#217346] px-4 py-3 flex items-center gap-4">
+              <div className="w-full bg-white rounded-lg shadow-2xl border-4 border-[#217346] overflow-hidden h-[620px] flex flex-col">
+                <div className="bg-[#217346] px-4 py-3 flex items-center gap-4 shrink-0">
                   <div className="flex gap-1.5">
                     <div className="w-3 h-3 rounded-full bg-white/30" />
                     <div className="w-3 h-3 rounded-full bg-white/30" />
@@ -267,34 +264,36 @@ export default function DemoPage7() {
                   <div className="text-sm font-semibold text-white">Workforce_Intelligence.xlsx - Excel</div>
                 </div>
 
-                <div className="h-10 bg-[#f3f2f1] border-b border-slate-300 flex items-center px-3 gap-6">
+                <div className="h-10 bg-[#f3f2f1] border-b border-slate-300 flex items-center px-3 gap-6 shrink-0">
                   <div className="text-xs font-medium text-slate-600">File</div>
                   <div className="text-xs font-medium text-slate-600">Home</div>
                   <div className="text-xs font-medium text-[#217346]">Insert</div>
                   <div className="text-xs font-medium text-slate-600">Data</div>
                 </div>
 
-                <div className="bg-white overflow-hidden relative">
-                  <table className="w-full border-collapse text-sm">
-                    <thead className="sticky top-0 z-10">
-                      <tr className="bg-[#e6e6e6]">
-                        <th className="w-10 h-8 border border-slate-300 text-[10px] text-slate-500 font-bold"></th>
-                        <th className="h-8 border border-slate-300 text-[10px] text-slate-500 font-bold">A</th>
-                        <th className="h-8 border border-slate-300 text-[10px] text-slate-500 font-bold">B</th>
-                        <th className="h-8 border border-slate-300 text-[10px] text-slate-500 font-bold">C</th>
-                        <th className="h-8 border border-slate-300 text-[10px] text-slate-500 font-bold">D</th>
-                      </tr>
-                      <tr className="bg-slate-100 font-semibold sticky top-8 z-10">
-                        <td className="w-10 h-9 border border-slate-300 text-center text-[10px] text-slate-500 font-bold bg-[#e6e6e6]">1</td>
-                        <td className="h-9 border border-slate-300 px-4 text-slate-700 bg-slate-100">Name</td>
-                        <td className="h-9 border border-slate-300 text-center text-slate-700 bg-slate-100">Hours</td>
-                        <td className="h-9 border border-slate-300 text-center text-slate-700 bg-slate-100">Phase</td>
-                        <td className="h-9 border border-slate-300 text-center text-slate-700 bg-slate-100">Status</td>
-                      </tr>
-                    </thead>
-                  </table>
+                <div className="bg-white overflow-hidden relative flex-1 min-h-0 flex flex-col">
+                  <div className="shrink-0">
+                    <table className="w-full border-collapse text-sm">
+                      <thead className="sticky top-0 z-10">
+                        <tr className="bg-[#e6e6e6]">
+                          <th className="w-10 h-8 border border-slate-300 text-[10px] text-slate-500 font-bold"></th>
+                          <th className="h-8 border border-slate-300 text-[10px] text-slate-500 font-bold">A</th>
+                          <th className="h-8 border border-slate-300 text-[10px] text-slate-500 font-bold">B</th>
+                          <th className="h-8 border border-slate-300 text-[10px] text-slate-500 font-bold">C</th>
+                          <th className="h-8 border border-slate-300 text-[10px] text-slate-500 font-bold">D</th>
+                        </tr>
+                        <tr className="bg-slate-100 font-semibold sticky top-8 z-10">
+                          <td className="w-10 h-9 border border-slate-300 text-center text-[10px] text-slate-500 font-bold bg-[#e6e6e6]">1</td>
+                          <td className="h-9 border border-slate-300 px-4 text-slate-700 bg-slate-100">Name</td>
+                          <td className="h-9 border border-slate-300 text-center text-slate-700 bg-slate-100">Hours</td>
+                          <td className="h-9 border border-slate-300 text-center text-slate-700 bg-slate-100">Phase</td>
+                          <td className="h-9 border border-slate-300 text-center text-slate-700 bg-slate-100">Status</td>
+                        </tr>
+                      </thead>
+                    </table>
+                  </div>
 
-                  <div className="h-[500px] overflow-hidden">
+                  <div className="flex-1 overflow-hidden min-h-0">
                     <div className="animate-scroll-rows">
                       <table className="w-full border-collapse text-sm">
                         <tbody>
@@ -354,7 +353,7 @@ export default function DemoPage7() {
               </div>
               )}
 
-                <div className="rounded-xl border border-slate-200/60 bg-white p-5 min-h-[620px] flex flex-col">
+                <div className="rounded-xl border border-slate-200/60 bg-white p-5 h-[620px] flex flex-col">
                   {isTimeReductionActive ? (
                     <div className="flex flex-1 flex-col items-center justify-center text-center">
                       <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -368,11 +367,11 @@ export default function DemoPage7() {
                       </div>
                     </div>
                   ) : isGutFeelActive ? (
-                    <div className="flex flex-1 flex-col">
-                      <div className="text-xs font-bold uppercase tracking-wider text-white/60">
+                    <div className="flex flex-1 flex-col min-h-0">
+                      <div className="text-xs font-bold uppercase tracking-wider text-white/60 shrink-0">
                         AI Insight
                       </div>
-                      <div className="mt-4 grid grid-cols-6 auto-rows-[86px] gap-4">
+                      <div className="mt-4 grid grid-cols-6 auto-rows-[86px] gap-4 flex-1 overflow-y-auto min-h-0 pb-2">
                         {insightCards.map((card, index) => (
                           <div
                             key={card.label}
@@ -425,11 +424,11 @@ export default function DemoPage7() {
                       </div>
                     </div>
                   ) : isSlipActive ? (
-                    <div className="flex flex-1 flex-col">
-                      <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    <div className="flex flex-1 flex-col min-h-0">
+                      <div className="text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0">
                         Predictive alerts
                       </div>
-                      <div className="mt-4 flex flex-1 flex-col gap-4">
+                      <div className="mt-4 flex flex-1 flex-col gap-4 overflow-y-auto min-h-0 pb-2">
                         {[
                           { title: "Attendance dip", detail: "Flagged after two consecutive absences.", tone: "bg-amber-50 text-amber-900" },
                           { title: "Needs support", detail: "Outlier hours detected compared to peers.", tone: "bg-rose-50 text-rose-700" },
@@ -442,7 +441,7 @@ export default function DemoPage7() {
                         ].map((alert, index) => (
                           <div
                             key={alert.title}
-                            className={`rounded-2xl border border-slate-200/70 px-4 py-3 shadow-sm alert-card ${alert.tone}`}
+                            className={`rounded-2xl border border-slate-200/70 px-4 py-3 shadow-sm alert-card shrink-0 ${alert.tone}`}
                             style={{ animationDelay: `${index * 700}ms` }}
                           >
                             <div className="text-sm font-semibold">{alert.title}</div>
@@ -452,12 +451,12 @@ export default function DemoPage7() {
                       </div>
                     </div>
                   ) : isRoleTrackingActive ? (
-                    <div className="flex flex-1 flex-col">
-                      <div className="text-xs font-bold uppercase tracking-wider text-white/60">
+                    <div className="flex flex-1 flex-col min-h-0">
+                      <div className="text-xs font-bold uppercase tracking-wider text-white/60 shrink-0">
                         Individual dashboard
                       </div>
-                      <div className="mt-4 flex flex-1 flex-col gap-4 rounded-2xl border border-slate-200/70 bg-white p-5 shadow-sm">
-                        <div className="flex items-center justify-between">
+                      <div className="mt-4 flex flex-1 flex-col gap-4 rounded-2xl border border-slate-200/70 bg-white p-5 shadow-sm overflow-y-auto min-h-0">
+                        <div className="flex items-center justify-between shrink-0">
                           <div>
                             <div className="text-sm font-semibold text-slate-500">Participant</div>
                             <div className="text-2xl font-bold text-slate-900">Jasmine Lee</div>
@@ -466,14 +465,14 @@ export default function DemoPage7() {
                             Phase 3
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2 shrink-0">
                           {["Certified: Safety Basics", "On Track", "High Engagement"].map((badge) => (
                             <span key={badge} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
                               {badge}
                             </span>
                           ))}
                         </div>
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-3 gap-3 shrink-0">
                           {[
                             { label: "Attendance", value: "92%" },
                             { label: "Hours", value: "165" },
@@ -487,7 +486,7 @@ export default function DemoPage7() {
                             </div>
                           ))}
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-3 shrink-0">
                           {[
                             { label: "Streak", value: "5 weeks" },
                             { label: "Next review", value: "Feb 4" },
@@ -502,7 +501,7 @@ export default function DemoPage7() {
                             </div>
                           ))}
                         </div>
-                        <div className="rounded-xl border border-slate-200/70 bg-slate-50 px-4 py-3">
+                        <div className="rounded-xl border border-slate-200/70 bg-slate-50 px-4 py-3 shrink-0">
                           <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Insights</div>
                           <ul className="mt-2 space-y-2 text-sm text-slate-700">
                             <li>Productivity above program average for 3 weeks.</li>
@@ -562,29 +561,6 @@ export default function DemoPage7() {
               Workforce development + Environmental impact, measured and managed in real-time.
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Logos */}
-      <div className="absolute right-12 bottom-12 flex items-end gap-4 bg-white/95 p-8 rounded-[2.5rem] shadow-xl backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-1000">
-        <div className="flex items-end pr-2">
-          <Image
-            src="/ransom-new.png"
-            alt="Ransom Operations Platform"
-            width={280}
-            height={280}
-            className="h-32 w-auto object-contain"
-          />
-        </div>
-        <div className="w-px h-20 bg-slate-200/50 self-center" />
-        <div className="flex items-end pl-2 pb-2">
-          <Image
-            src="/hatchathon.png"
-            alt="Hatchathon"
-            width={300}
-            height={300}
-            className="h-24 w-auto object-contain"
-          />
         </div>
       </div>
 

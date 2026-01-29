@@ -4,20 +4,20 @@ import React from "react";
 import Image from "next/image";
 
 const RED_ITEMS = [
-  "Already use HMIS for case management",
-  "Clinical data = HIPAA complications",
-  "ReProgram therapy notes off-limits",
-  "Building what they asked = compliance nightmare",
+  '"Spreadsheets, paper files, people slip through cracks" -- Their stated problem',
+  "Already use HMIS for case management (therapy, housing, clinical = HIPAA-protected)",
+  "Recycling operations tracked manually -- no connection to advancement decisions",
+  'Cannot answer: "Who\'s ready to advance based on work?"',
 ];
 
 const GREEN_ITEMS = [
-  "Exclude ALL clinical data",
-  "Focus on operational metrics only",
-  "Work hours + production = advancement",
-  "Zero HIPAA exposure",
+  "Strategic pivot: Build what's MISSING (operations intelligence, not case management)",
+  "Individual work performance tracking (hours logged + materials processed = advancement data)",
+  "AI scores readiness based on productivity (replace gut-feel with measurable criteria)",
+  "Complements HMIS, avoids HIPAA entirely (right tool for the right job)",
 ];
 
-const QUOTE = "Can't connect participant work performance to advancement decisions.";
+const QUOTE = "Operations data becomes advancement data -- without touching HIPAA systems.";
 
 export default function DemoPage2() {
   return (

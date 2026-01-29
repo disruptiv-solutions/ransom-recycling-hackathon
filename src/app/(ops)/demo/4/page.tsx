@@ -55,7 +55,7 @@ export default function DemoPage4() {
                 <div className="mb-4 text-5xl">🛡️</div>
                 <h2 className="mb-4 text-xl font-bold text-white">DATA PROTECTION</h2>
                 <ul className="space-y-2.5 text-base text-white/90">
-                  <li>Zero PII/PHI</li>
+                  <li>PII limited to email and phone</li>
                   <li>Encrypted transit</li>
                   <li>Minimal data scope</li>
                 </ul>

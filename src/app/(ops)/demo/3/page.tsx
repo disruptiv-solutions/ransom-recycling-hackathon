@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { MessageSquare, Calculator, Brain, FileText } from "lucide-react";
+import { MessageSquare, Calculator, Brain, FileText, Mail, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AgentPanel } from "@/components/ops/agent-panel";
+import { cn } from "@/lib/utils";
 
 const FEATURES = [
   {
@@ -32,6 +34,20 @@ const FEATURES = [
     description: "Automated compliance documentation and impact metrics",
     color: "from-orange-500 to-red-500",
     type: "countdown",
+  },
+  {
+    icon: Mail,
+    title: "Email notifications enabled",
+    description: "Automated alerts and updates delivered to your inbox",
+    color: "from-indigo-500 to-blue-500",
+    type: "email",
+  },
+  {
+    icon: Clock,
+    title: "Scheduled AI briefs",
+    description: "Daily executive summaries sent automatically at 8 AM",
+    color: "from-teal-500 to-cyan-500",
+    type: "schedule",
   },
 ];
 
@@ -149,11 +165,73 @@ function CountdownAnimation() {
   );
 }
 
-export default function DemoPage3() {
+function EmailAnimation() {
+  const [envelope, setEnvelope] = useState(0);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setEnvelope(prev => (prev + 1) % 3);
+    }, 1500);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="relative min-h-screen bg-linear-to-br from-white via-[#4d8227] to-[#3a91ba] overflow-hidden">
+    <div className="flex items-center justify-center w-full h-full">
+      <div className="relative w-16 h-16">
+        <div className={`absolute inset-0 transition-all duration-500 ${envelope === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
+          <Mail className="w-full h-full text-white/50" />
+        </div>
+        <div className={`absolute inset-0 transition-all duration-500 ${envelope === 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+          <Mail className="w-full h-full text-white/60" />
+        </div>
+        <div className={`absolute inset-0 transition-all duration-500 ${envelope === 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+          <Mail className="w-full h-full text-white/40" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScheduleAnimation() {
+  const [time, setTime] = useState("8:00");
+  
+  useEffect(() => {
+    const times = ["8:00", "8:15", "8:30", "8:45"];
+    let index = 0;
+    const interval = setInterval(() => {
+      index = (index + 1) % times.length;
+      setTime(times[index]);
+    }, 1200);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex items-center justify-center w-full h-full">
+      <div className="text-center">
+        <Clock className="w-12 h-12 text-white/50 mx-auto mb-2" />
+        <div className="text-2xl font-bold text-white/40 tabular-nums">
+          {time}
+        </div>
+        <div className="text-xs text-white/30 mt-1">AM</div>
+      </div>
+    </div>
+  );
+}
+
+export default function DemoPage3() {
+  const [isAgentOpen, setIsAgentOpen] = useState(false);
+
+  const handleChatClick = () => {
+    setIsAgentOpen((prev) => !prev);
+  };
+
+  return (
+    <div className="relative min-h-screen bg-linear-to-br from-white via-[#4d8227] to-[#3a91ba] overflow-hidden md:flex md:h-screen md:overflow-hidden">
       {/* Main content */}
-      <div className="flex min-h-screen flex-col items-center justify-center px-12 py-20">
+      <div className={cn(
+        "relative flex-1 flex min-h-screen flex-col items-center justify-center px-12 py-20 transition-all duration-300 overflow-hidden",
+        isAgentOpen && "md:mr-0"
+      )}>
         <div className="max-w-7xl w-full flex flex-col items-center gap-12">
           {/* Header Section */}
           <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-8 duration-1000 delay-300 fill-mode-both">
@@ -166,14 +244,18 @@ export default function DemoPage3() {
           </div>
 
           {/* Features Grid */}
-          <div className="grid grid-cols-2 gap-6 w-full max-w-6xl animate-in fade-in zoom-in-95 duration-1000 delay-500 fill-mode-both">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-6xl animate-in fade-in zoom-in-95 duration-1000 delay-500 fill-mode-both">
             {FEATURES.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <div 
                   key={index} 
-                  className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl hover:bg-white/15 transition-all duration-300 group overflow-hidden"
+                  className={cn(
+                    "relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl hover:bg-white/15 transition-all duration-300 group overflow-hidden",
+                    feature.type === "chat" && "cursor-pointer"
+                  )}
                   style={{ minHeight: '200px' }}
+                  onClick={feature.type === "chat" ? handleChatClick : undefined}
                 >
                   {/* Gradient background glow */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
@@ -203,6 +285,8 @@ export default function DemoPage3() {
                       {feature.type === "calculator" && <CalculatorAnimation />}
                       {feature.type === "scoring" && <ScoringAnimation />}
                       {feature.type === "countdown" && <CountdownAnimation />}
+                      {feature.type === "email" && <EmailAnimation />}
+                      {feature.type === "schedule" && <ScheduleAnimation />}
                     </div>
                   </div>
                 </div>
@@ -210,15 +294,21 @@ export default function DemoPage3() {
             })}
           </div>
         </div>
+
+        {/* Bottom banner */}
+        <div className="absolute bottom-0 left-0 right-0 bg-white/10 backdrop-blur-xl border-t border-white/20 py-6 px-8 flex justify-center animate-in fade-in slide-in-from-bottom-full duration-1000 delay-1000 fill-mode-both">
+          <p className="text-2xl font-black text-white tracking-[0.1em] uppercase drop-shadow-lg">
+            Zero clinical data. <span className="text-emerald-400">100% operational metrics.</span>
+          </p>
+        </div>
       </div>
 
-      {/* Bottom banner */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white/10 backdrop-blur-xl border-t border-white/20 py-6 px-8 flex justify-center animate-in fade-in slide-in-from-bottom-full duration-1000 delay-1000 fill-mode-both">
-        <p className="text-2xl font-black text-white tracking-[0.1em] uppercase drop-shadow-lg">
-          Zero clinical data. <span className="text-emerald-400">100% operational metrics.</span>
-        </p>
-      </div>
-
+      {/* AI Chat Sidebar */}
+      {isAgentOpen && (
+        <div className="hidden md:block">
+          <AgentPanel onClose={() => setIsAgentOpen(false)} />
+        </div>
+      )}
     </div>
   );
 }

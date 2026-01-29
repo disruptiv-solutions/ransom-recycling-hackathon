@@ -10,6 +10,12 @@ const serverEnvSchema = z.object({
   PIPEDREAM_PROJECT_ID: z.string().min(1).optional(),
   PIPEDREAM_ENVIRONMENT: z.enum(["development", "production"]).optional(),
   PIPEDREAM_APP_SLUG: z.string().min(1).optional(),
+  SMTP_HOST: z.string().min(1).optional(),
+  SMTP_PORT: z.string().min(1).optional(),
+  SMTP_USER: z.string().min(1).optional(),
+  SMTP_PASS: z.string().min(1).optional(),
+  SMTP_FROM: z.string().min(1).optional(),
+  CRON_SECRET: z.string().min(1).optional(),
 });
 
 export const getServerEnv = () =>
