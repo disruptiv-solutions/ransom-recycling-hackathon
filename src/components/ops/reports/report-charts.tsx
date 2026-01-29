@@ -115,9 +115,10 @@ export const ReportCharts = ({ chartConfigurations }: ReportChartsProps) => {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number) => {
-                      const percent = totalValue > 0 ? ((value / totalValue) * 100).toFixed(1) : "0";
-                      return [`${value} (${percent}%)`, "Value"];
+                    formatter={(value: any) => {
+                      const v = Number(value || 0);
+                      const percent = totalValue > 0 ? ((v / totalValue) * 100).toFixed(1) : "0";
+                      return [`${v} (${percent}%)`, "Value"];
                     }}
                   />
                   <Legend
@@ -179,9 +180,10 @@ export const ReportCharts = ({ chartConfigurations }: ReportChartsProps) => {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number) => {
-                      const percent = donutTotalValue > 0 ? ((value / donutTotalValue) * 100).toFixed(1) : "0";
-                      return [`${value} (${percent}%)`, "Value"];
+                    formatter={(value: any) => {
+                      const v = Number(value || 0);
+                      const percent = donutTotalValue > 0 ? ((v / donutTotalValue) * 100).toFixed(1) : "0";
+                      return [`${v} (${percent}%)`, "Value"];
                     }}
                   />
                   <Legend

@@ -2,11 +2,12 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { Target, CheckCircle2, Sparkles, Clock, Users, DollarSign, TrendingUp } from "lucide-react";
 
 import type { Certification, Participant, ReadinessAssessment, WorkLog } from "@/lib/ops/types";
 import { formatDisplayDate, formatShortDate } from "@/lib/ops/date";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -255,31 +256,60 @@ export const ParticipantProfile = ({
         </Card>
       </div>
 
-      <Card className="border-slate-200">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">AI Readiness Assessment</CardTitle>
-          <Button variant="outline" size="sm" onClick={handleGenerateAssessment} disabled={loadingAssessment}>
-            {loadingAssessment ? "Generating..." : "Regenerate"}
+      <Card className="border-slate-200 overflow-hidden rounded-[2.5rem] shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between bg-slate-50/50 border-b border-slate-100 px-8 py-6">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
+              <Target className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-black text-slate-900 tracking-tight">AI Readiness Assessment</CardTitle>
+              <CardDescription>Automated progression analysis</CardDescription>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleGenerateAssessment} disabled={loadingAssessment} className="rounded-xl font-bold">
+            {loadingAssessment ? "Generating..." : "Regenerate Analysis"}
           </Button>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="p-8">
           {assessment ? (
-            <>
-              <span
-                className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                  statusColors[assessment.status] ?? "bg-slate-100 text-slate-600"
-                }`}
-              >
-                {assessment.status.replace("_", " ").toUpperCase()}
-              </span>
-              <p className="text-sm text-slate-700">{assessment.assessment}</p>
-              <p className="text-xs text-slate-500">{assessment.recommendation}</p>
-              <p className="text-xs text-slate-400">
-                Generated {assessment.generatedAt ? formatDisplayDate(assessment.generatedAt) : "—"}
-              </p>
-            </>
+            <div className="grid gap-8 md:grid-cols-[1fr_1.5fr]">
+              <div className="flex flex-col gap-4">
+                <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Current Status</div>
+                <div
+                  className={`inline-flex items-center justify-center rounded-3xl px-6 py-4 text-sm font-black tracking-[0.1em] ${
+                    statusColors[assessment.status] ?? "bg-slate-100 text-slate-600"
+                  } shadow-sm border border-current opacity-80`}
+                >
+                  {assessment.status.replace("_", " ").toUpperCase()}
+                </div>
+                <div className="mt-auto text-[10px] font-bold text-slate-400 uppercase">
+                  Generated {assessment.generatedAt ? formatDisplayDate(assessment.generatedAt) : "—"}
+                </div>
+              </div>
+              <div className="space-y-6">
+                <div className="rounded-3xl bg-slate-50 p-6 border border-slate-100">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">AI Narrative</p>
+                  <p className="text-lg font-bold text-slate-800 leading-relaxed italic">"{assessment.assessment}"</p>
+                </div>
+                <div className="flex gap-4 items-start">
+                  <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Key Recommendation</p>
+                    <p className="text-sm font-bold text-slate-600">{assessment.recommendation}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           ) : (
-            <p className="text-sm text-slate-500">No assessment yet. Generate one to get started.</p>
+            <div className="text-center py-12">
+              <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="h-8 w-8 text-slate-300" />
+              </div>
+              <p className="text-slate-500 font-medium">No assessment yet. Generate one to get started.</p>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -347,12 +377,37 @@ export const ParticipantProfile = ({
   );
 };
 
-const MetricCard = ({ label, value, helper }: { label: string; value: string; helper: string }) => (
-  <Card className="border-slate-200">
-    <CardContent className="p-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{label}</p>
-      <p className="mt-3 text-3xl font-semibold text-slate-900">{value}</p>
-      <p className="mt-1 text-xs text-slate-500">{helper}</p>
-    </CardContent>
-  </Card>
-);
+const MetricCard = ({ label, value, helper }: { label: string; value: string; helper: string }) => {
+  const getIcon = (l: string) => {
+    const t = l.toLowerCase();
+    if (t.includes("hours")) return <Clock className="h-5 w-5 text-blue-600" />;
+    if (t.includes("attendance")) return <Users className="h-5 w-5 text-emerald-600" />;
+    if (t.includes("revenue")) return <DollarSign className="h-5 w-5 text-amber-600" />;
+    return <TrendingUp className="h-5 w-5 text-slate-600" />;
+  };
+
+  const getBg = (l: string) => {
+    const t = l.toLowerCase();
+    if (t.includes("hours")) return "bg-blue-50";
+    if (t.includes("attendance")) return "bg-emerald-50";
+    if (t.includes("revenue")) return "bg-amber-50";
+    return "bg-slate-50";
+  };
+
+  return (
+    <Card className="border-slate-200 overflow-hidden rounded-[2rem] shadow-sm hover:shadow-md transition-shadow">
+      <CardContent className="p-8">
+        <div className="flex items-start justify-between mb-6">
+          <div className={`p-3 rounded-2xl ${getBg(label)}`}>
+            {getIcon(label)}
+          </div>
+        </div>
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-2">{label}</p>
+          <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{value}</h3>
+          <p className="mt-2 text-sm font-bold text-slate-500/80 uppercase tracking-widest">{helper}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

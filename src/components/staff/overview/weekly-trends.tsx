@@ -51,7 +51,7 @@ export function WeeklyTrends({ revenueData, phaseData }: TrendsProps) {
               />
               <Tooltip 
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                formatter={(value: number) => [`$${value}`, 'Revenue']}
+                formatter={(value: any) => [`$${value || 0}`, 'Revenue']}
               />
               <Line 
                 type="monotone" 

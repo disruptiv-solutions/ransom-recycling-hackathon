@@ -6,9 +6,9 @@ export const formatDisplayDate = (value: string | Date | null | undefined) => {
     date = new Date(value);
   } else if (value instanceof Date) {
     date = value;
-  } else if (typeof value === "object" && "toDate" in value && typeof value.toDate === "function") {
+  } else if (typeof value === "object" && value !== null && "toDate" in value && typeof (value as any).toDate === "function") {
     // Handle Firestore Timestamp
-    date = value.toDate();
+    date = (value as any).toDate();
   } else if (typeof value === "object" && "seconds" in value) {
     // Handle Firestore Timestamp with seconds
     date = new Date((value as { seconds: number }).seconds * 1000);

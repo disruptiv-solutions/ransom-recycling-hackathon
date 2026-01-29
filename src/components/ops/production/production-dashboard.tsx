@@ -329,7 +329,7 @@ export const ProductionDashboard = ({ initialRecords, initialWorkLogs, defaultRa
                 />
                 <Tooltip 
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                  formatter={(value: number) => [formatCurrency(value), "Revenue"]}
+                  formatter={(value: any) => [formatCurrency(Number(value || 0)), "Revenue"]}
                 />
                 <Area 
                   type="monotone" 
@@ -368,7 +368,7 @@ export const ProductionDashboard = ({ initialRecords, initialWorkLogs, defaultRa
                     ))}
                   </Pie>
                   <Tooltip 
-                     formatter={(value: number) => formatCurrency(value)}
+                     formatter={(value: any) => formatCurrency(Number(value || 0))}
                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />
                 </PieChart>
@@ -468,7 +468,7 @@ export const ProductionDashboard = ({ initialRecords, initialWorkLogs, defaultRa
                 <Tooltip 
                   cursor={{ fill: '#f8fafc' }}
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  formatter={(value: number) => formatCurrency(value)}
+                   formatter={(value: any) => formatCurrency(Number(value || 0))}
                 />
                 <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20}>
                   {customerBreakdown.map((entry, index) => (

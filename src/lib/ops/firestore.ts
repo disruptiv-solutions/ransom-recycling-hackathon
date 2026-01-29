@@ -137,7 +137,7 @@ export const mapReport = (id: string, data: FirebaseFirestore.DocumentData): Rep
   narrative: typeof data.narrative === "string" ? data.narrative : null,
   stories: typeof data.stories === "string" ? data.stories : null,
   charts: typeof data.charts === "string" ? data.charts : null,
-  chartConfigurations: Array.isArray(data.chartConfigurations) ? data.chartConfigurations : null,
+  chartConfigurations: Array.isArray(data.chartConfigurations) ? data.chartConfigurations : undefined,
   visualizationSpecs: Array.isArray(data.visualizationSpecs) ? data.visualizationSpecs : null,
   reportType: (data.reportType ?? "comprehensive") as ReportResult["reportType"],
   startDate: typeof data.startDate === "string" ? data.startDate : new Date().toISOString(),

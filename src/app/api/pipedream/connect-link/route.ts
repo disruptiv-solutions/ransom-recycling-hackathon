@@ -78,7 +78,6 @@ export const POST = async () => {
       allowed_origins: requestBody.allowed_origins,
       success_redirect_uri: requestBody.success_redirect_uri,
       error_redirect_uri: requestBody.error_redirect_uri,
-      app: requestBody.app || "not included",
       fullBody: JSON.stringify(requestBody),
     });
 
@@ -90,7 +89,7 @@ export const POST = async () => {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
-        "x-pd-environment": env.PIPEDREAM_ENVIRONMENT,
+        "x-pd-environment": env.PIPEDREAM_ENVIRONMENT as string,
       },
       body: JSON.stringify(requestBody),
     });

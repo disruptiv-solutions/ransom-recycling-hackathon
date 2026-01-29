@@ -30,7 +30,7 @@ export const GET = async (req: Request) => {
   const search = searchParams.get("search");
 
   const snapshot = await getFirebaseAdminDb().collection("participants").orderBy("name").get();
-  const participants = snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() ?? {}) }));
+  const participants = snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() ?? {}) })) as any[];
 
   const filtered = participants.filter((participant) => {
     if (status && participant.status !== status) return false;

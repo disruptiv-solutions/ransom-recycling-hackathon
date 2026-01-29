@@ -13,7 +13,8 @@ const updateSchema = z.object({
 
 export const runtime = "nodejs";
 
-export const PATCH = async (req: Request, context: { params: { id: string } }) => {
+export const PATCH = async (req: Request, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params;
   const profile = await getSessionProfile();
   if (!profile || !isStaffRole(profile.role)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 403 });
@@ -25,7 +26,7 @@ export const PATCH = async (req: Request, context: { params: { id: string } }) =
     return NextResponse.json({ ok: false, error: "Invalid payload", details: parsed.error.format() }, { status: 400 });
   }
 
-  await getFirebaseAdminDb().doc(`alerts/${context.params.id}`).set(
+  await getFirebaseAdminDb().doc(`alerts/${id}`).set(
     {
       ...parsed.data,
       updatedAt: FieldValue.serverTimestamp(),

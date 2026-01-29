@@ -17,7 +17,8 @@ const updateSchema = z.object({
 
 export const runtime = "nodejs";
 
-export const PATCH = async (req: Request, context: { params: { id: string } }) => {
+export const PATCH = async (req: Request, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params;
   const profile = await getSessionProfile();
   if (!profile || !isStaffRole(profile.role)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 403 });
@@ -51,7 +52,7 @@ export const PATCH = async (req: Request, context: { params: { id: string } }) =
     parsed.data.materialCategory || parsed.data.materialType || typeof parsed.data.weight === "number";
 
   if (shouldRecalculate) {
-    const doc = await db.doc(`production_records/${context.params.id}`).get();
+    const doc = await db.doc(`production_records/${id}`).get();
     const existing = doc.data() ?? {};
     const category = parsed.data.materialCategory ?? existing.materialCategory;
     const type = parsed.data.materialType ?? existing.materialType;
@@ -82,16 +83,17 @@ export const PATCH = async (req: Request, context: { params: { id: string } }) =
     updates.role = role;
   }
 
-  await db.doc(`production_records/${context.params.id}`).set(updates, { merge: true });
+  await db.doc(`production_records/${id}`).set(updates, { merge: true });
   return NextResponse.json({ ok: true });
 };
 
-export const DELETE = async (_req: Request, context: { params: { id: string } }) => {
+export const DELETE = async (_req: Request, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params;
   const profile = await getSessionProfile();
   if (!profile || profile.originalRole !== "admin") {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 403 });
   }
 
-  await getFirebaseAdminDb().doc(`production_records/${context.params.id}`).delete();
+  await getFirebaseAdminDb().doc(`production_records/${id}`).delete();
   return NextResponse.json({ ok: true });
 };

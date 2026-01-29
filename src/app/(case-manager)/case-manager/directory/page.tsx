@@ -276,7 +276,8 @@ const ParticipantDirectoryPage = () => {
                           </Button>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>

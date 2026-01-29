@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sparkles, RefreshCw, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Info, Zap, Target, Users, BarChart3, Lightbulb, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sparkles, RefreshCw, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Info, Zap, Target, Users, BarChart3, Lightbulb, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -137,33 +137,55 @@ export const ParticipantIntelligence = ({ participantId, participantName, curren
               </Button>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-black uppercase tracking-widest", statusColors[data.snapshot.status])}>
-                {statusIcons[data.snapshot.status]}
-                {data.snapshot.status}
+              <div className="flex items-center justify-between">
+                <div className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-black uppercase tracking-widest", statusColors[data.snapshot.status])}>
+                  {statusIcons[data.snapshot.status]}
+                  {data.snapshot.status}
+                </div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Updated {new Date(data.generatedAt).toLocaleDateString()}
+                </div>
               </div>
               
-              <div className="prose prose-slate max-w-none">
-                <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-line font-medium italic">
-                  {data.snapshot.narrative}
-                </p>
+              <div className="rounded-2xl bg-white border border-slate-100 p-6 shadow-inner">
+                <div className="flex gap-4">
+                  <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                    <Info className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <p className="text-base leading-relaxed text-slate-700 font-medium">
+                    {data.snapshot.narrative}
+                  </p>
+                </div>
               </div>
 
               <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-3">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recommended Actions</p>
-                  <div className="space-y-2">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4 text-amber-500" />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recommended Actions</p>
+                  </div>
+                  <div className="grid gap-3">
                     {data.snapshot.actions.map((action, i) => (
-                      <div key={i} className="flex items-start gap-3 rounded-xl border border-slate-100 bg-white p-3 shadow-sm">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[10px] font-black text-white">{i + 1}</span>
-                        <span className="text-xs font-bold text-slate-700">{action}</span>
+                      <div key={i} className="group flex items-start gap-4 rounded-2xl border border-slate-100 bg-white p-4 transition-all hover:border-blue-200 hover:shadow-md">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-black text-slate-500 group-hover:bg-blue-600 group-hover:text-white transition-colors">{i + 1}</span>
+                        <span className="text-sm font-bold text-slate-700 leading-snug">{action}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-blue-100 bg-blue-50/30 p-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Next Milestone</p>
-                  <p className="mt-2 text-sm font-bold text-slate-900">Mid-Phase Review</p>
-                  <p className="text-xs font-medium text-slate-500">Scheduled for Day 45 (in {45 - currentDay} days)</p>
+                <div className="flex flex-col">
+                  <div className="rounded-3xl border border-blue-100 bg-blue-50/30 p-6 flex-1 flex flex-col justify-center">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="h-8 w-8 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
+                        <Calendar className="h-4 w-4 text-white" />
+                      </div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Next Milestone</p>
+                    </div>
+                    <p className="text-xl font-black text-slate-900 leading-tight">Mid-Phase Review</p>
+                    <p className="mt-2 text-sm font-bold text-blue-600/80 tracking-wide">
+                      Scheduled for Day 45 <span className="text-slate-400 font-medium">· in {45 - currentDay} days</span>
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -244,38 +266,57 @@ export const ParticipantIntelligence = ({ participantId, participantName, curren
                 <CardTitle className="text-lg font-bold text-slate-900 uppercase tracking-wider">Peer Comparison</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <PeerScatterPlot 
-                currentParticipantName={participantName}
-                data={[
-                  { name: participantName, attendance: 60, productivity: 9.96, isCurrent: true },
-                  { name: "Peer A", attendance: 85, productivity: 8.2 },
-                  { name: "Peer B", attendance: 92, productivity: 7.5 },
-                  { name: "Peer C", attendance: 78, productivity: 11.2 },
-                  { name: "Peer D", attendance: 88, productivity: 8.8 },
-                  { name: "Peer E", attendance: 95, productivity: 6.4 },
-                ]} 
-              />
-              <div className="space-y-4">
-                <div className="flex gap-4">
-                  <div className="flex-1 rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Productivity</p>
-                    <p className="mt-1 text-sm font-black text-slate-700">{data.peerContext.productivityRank.replace('_', ' ')}</p>
+            <CardContent className="space-y-8">
+              <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+                <PeerScatterPlot 
+                  currentParticipantName={participantName}
+                  data={[
+                    { name: participantName, attendance: 60, productivity: 9.96, isCurrent: true },
+                    { name: "Peer A", attendance: 85, productivity: 8.2 },
+                    { name: "Peer B", attendance: 92, productivity: 7.5 },
+                    { name: "Peer C", attendance: 78, productivity: 11.2 },
+                    { name: "Peer D", attendance: 88, productivity: 8.8 },
+                    { name: "Peer E", attendance: 95, productivity: 6.4 },
+                  ]} 
+                />
+              </div>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <div className="flex-1 rounded-3xl border border-slate-100 bg-slate-50 p-6 flex flex-col justify-center">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Productivity</p>
+                      <p className="text-xl font-black text-slate-900 tracking-tight">{data.peerContext.productivityRank.replace('_', ' ')}</p>
+                    </div>
+                    <div className="flex-1 rounded-3xl border border-slate-100 bg-slate-50 p-6 flex flex-col justify-center">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Attendance</p>
+                      <p className="text-xl font-black text-slate-900 tracking-tight">{data.peerContext.attendanceRank.replace('_', ' ')}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Attendance</p>
-                    <p className="mt-1 text-sm font-black text-slate-700">{data.peerContext.attendanceRank.replace('_', ' ')}</p>
+                  {data.peerContext.similarProfile !== "None" && (
+                    <div className="flex items-start gap-4 rounded-[2.5rem] bg-blue-600 p-6 shadow-xl shadow-blue-600/20">
+                      <div className="h-10 w-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
+                        <Users className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-widest text-white/60 mb-1">Success Pattern</p>
+                        <p className="text-sm font-bold text-white leading-relaxed">
+                          Similar Profile: <span className="underline decoration-white/30 underline-offset-4">{data.peerContext.similarProfile}</span> recovered with transportation assistance.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="rounded-3xl bg-slate-900 p-8 flex flex-col justify-center relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <TrendingUp className="h-24 w-24 text-white" />
+                  </div>
+                  <div className="relative z-10">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-4">Peer Analysis</p>
+                    <p className="text-lg font-bold leading-relaxed text-white italic">
+                      "{data.peerContext.analysis}"
+                    </p>
                   </div>
                 </div>
-                <p className="text-xs font-bold leading-relaxed text-slate-600 italic">
-                  "{data.peerContext.analysis}"
-                </p>
-                {data.peerContext.similarProfile !== "None" && (
-                  <div className="flex items-center gap-3 rounded-xl bg-blue-50 px-4 py-3 border border-blue-100">
-                    <Info className="h-4 w-4 text-blue-600" />
-                    <p className="text-xs font-bold text-blue-700">Similar Profile: <span className="underline">{data.peerContext.similarProfile}</span> recovered with transportation assistance.</p>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
@@ -290,30 +331,41 @@ export const ParticipantIntelligence = ({ participantId, participantName, curren
                 <CardTitle className="text-lg font-bold text-slate-900 uppercase tracking-wider">Production Insights</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Material Specialization</p>
-                  <p className="mt-1 text-sm font-black text-slate-700">{data.production.specialization}</p>
+            <CardContent className="space-y-8">
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="rounded-[2.5rem] bg-slate-900 p-8 flex flex-col justify-center relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <BarChart3 className="h-24 w-24 text-white" />
+                  </div>
+                  <div className="relative z-10">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-4">Production Analysis</p>
+                    <p className="text-lg font-bold leading-relaxed text-white">
+                      {data.production.analysis}
+                    </p>
+                  </div>
                 </div>
-                <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Efficiency Pattern</p>
-                  <p className="mt-1 text-sm font-black text-slate-700">{data.production.efficiency}</p>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm flex flex-col justify-center">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Material Specialization</p>
+                    <p className="text-xl font-black text-slate-900 tracking-tight">{data.production.specialization}</p>
+                  </div>
+                  <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm flex flex-col justify-center">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Efficiency Pattern</p>
+                    <p className="text-xl font-black text-slate-900 tracking-tight">{data.production.efficiency}</p>
+                  </div>
                 </div>
               </div>
               
-              <div className="prose prose-slate max-w-none">
-                <p className="text-xs font-bold leading-relaxed text-slate-600 whitespace-pre-line">
-                  {data.production.analysis}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-amber-100 bg-amber-50/50 p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <Zap className="h-4 w-4 text-amber-600" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">Growth Opportunity</p>
+              <div className="rounded-[2.5rem] border-2 border-dashed border-amber-200 bg-amber-50/30 p-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-10 w-10 rounded-2xl bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                    <Zap className="h-5 w-5 text-white" />
+                  </div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-600">Strategic Growth Opportunity</p>
                 </div>
-                <p className="text-sm font-bold text-slate-900">{data.production.opportunity}</p>
+                <p className="text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                  {data.production.opportunity}
+                </p>
               </div>
             </CardContent>
           </Card>

@@ -14,6 +14,7 @@ export type SessionProfile = {
   role: AppRole;
   originalRole: AppRole;
   displayName?: string | null;
+  photoURL?: string | null;
 };
 
 const SESSION_COOKIE_NAME = "__session";
@@ -60,6 +61,7 @@ export const getSessionProfile = cache(async (): Promise<SessionProfile | null> 
     role,
     originalRole,
     displayName: typeof data.displayName === "string" ? data.displayName : null,
+    photoURL: typeof data.photoURL === "string" ? data.photoURL : null,
   };
 });
 

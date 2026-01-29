@@ -16,7 +16,8 @@ const updateSchema = z.object({
 
 export const runtime = "nodejs";
 
-export const PATCH = async (req: Request, context: { params: { id: string } }) => {
+export const PATCH = async (req: Request, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params;
   const profile = await getSessionProfile();
   if (!profile || !isStaffRole(profile.role)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 403 });
@@ -36,16 +37,17 @@ export const PATCH = async (req: Request, context: { params: { id: string } }) =
     updates.workDate = Timestamp.fromDate(new Date(parsed.data.workDate));
   }
 
-  await getFirebaseAdminDb().doc(`work_logs/${context.params.id}`).set(updates, { merge: true });
+  await getFirebaseAdminDb().doc(`work_logs/${id}`).set(updates, { merge: true });
   return NextResponse.json({ ok: true });
 };
 
-export const DELETE = async (_req: Request, context: { params: { id: string } }) => {
+export const DELETE = async (_req: Request, context: { params: Promise<{ id: string }> }) => {
+  const { id } = await context.params;
   const profile = await getSessionProfile();
   if (!profile || profile.originalRole !== "admin") {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 403 });
   }
 
-  await getFirebaseAdminDb().doc(`work_logs/${context.params.id}`).delete();
+  await getFirebaseAdminDb().doc(`work_logs/${id}`).delete();
   return NextResponse.json({ ok: true });
 };
