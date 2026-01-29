@@ -174,7 +174,7 @@ export const AgentPanel = ({ onClose }: AgentPanelProps) => {
   };
 
   return (
-    <aside className="hidden w-[380px] shrink-0 border-l border-slate-200 bg-slate-50/50 md:flex lg:w-[440px]">
+    <aside className="h-screen w-[380px] shrink-0 border-l border-slate-200 bg-slate-50/50 flex lg:w-[440px]">
       <div className="flex h-full w-full flex-col bg-white">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3 shadow-sm">

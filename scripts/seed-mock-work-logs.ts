@@ -1,5 +1,6 @@
 /**
  * Seed mock work logs for demo mode.
+ * Updated to generate more data with neutral/positive trends and a few critical participants.
  * Run with: npx tsx scripts/seed-mock-work-logs.ts
  */
 
@@ -11,13 +12,47 @@ config({ path: resolve(process.cwd(), ".env.local") });
 
 import { getFirebaseAdminDb } from "../src/lib/firebase/admin.js";
 
-const WORK_LOG_COUNT = 1000;
+const WORK_LOG_COUNT = 5000; // Increased from 1000
 const ROLES = ["Processing", "Sorting", "Hammermill", "Truck"] as const;
 
+// Critical participants (will have consistently negative performance)
+const CRITICAL_PARTICIPANT_NAMES = [
+  "Marcus Thompson",
+  "Jordan Smith",
+  "Devon Roberts",
+];
+
 const TAGS = {
-  positive: ["Great Attitude", "High Productivity", "Mentored Others", "Punctual", "Took Initiative"],
-  neutral: ["Standard Performance", "Task Completed", "Followed Instructions"],
-  negative: ["Late", "Distracted", "Low Output", "Safety Violation", "Left Early"],
+  positive: [
+    "Great Attitude",
+    "High Productivity",
+    "Mentored Others",
+    "Punctual",
+    "Took Initiative",
+    "Excellent Work",
+    "Team Player",
+    "Consistent Performance",
+  ],
+  neutral: [
+    "Standard Performance",
+    "Task Completed",
+    "Followed Instructions",
+    "On Time",
+    "Met Expectations",
+    "Routine Work",
+    "Completed Shift",
+    "Normal Operations",
+  ],
+  negative: [
+    "Late",
+    "Distracted",
+    "Low Output",
+    "Safety Violation",
+    "Left Early",
+    "Needs Improvement",
+    "Inconsistent",
+    "Required Supervision",
+  ],
 };
 
 const NOTES = {
@@ -30,12 +65,22 @@ const NOTES = {
     "Strong attention to detail.",
     "Helped new team members.",
     "Exceeded production targets.",
+    "Consistent performance throughout shift.",
+    "Proactive in identifying issues.",
+    "Excellent communication with team.",
+    "Maintained high quality standards.",
   ],
   neutral: [
     "Completed assigned tasks.",
     "Standard shift.",
     "Followed safety protocols.",
     "Routine work day.",
+    "Met daily production goals.",
+    "Attended all required meetings.",
+    "Standard performance metrics.",
+    "Completed shift as scheduled.",
+    "No issues reported.",
+    "Normal operations.",
   ],
   negative: [
     "Needed extra support with sorting.",
@@ -43,6 +88,11 @@ const NOTES = {
     "Struggled with focus today.",
     "Left work station early.",
     "Needs reminders on safety gear.",
+    "Required multiple corrections.",
+    "Lower than expected output.",
+    "Had difficulty following instructions.",
+    "Needs additional training.",
+    "Performance below standard.",
   ],
 };
 
@@ -57,14 +107,22 @@ const randomDateInRange = (daysBack: number) => {
   return new Date(time);
 };
 
-const generateTagsAndNotes = () => {
-  const rand = Math.random();
+const generateTagsAndNotes = (isCritical: boolean) => {
   let category: "positive" | "neutral" | "negative";
   
-  // 60% Positive, 30% Neutral, 10% Negative
-  if (rand < 0.6) category = "positive";
-  else if (rand < 0.9) category = "neutral";
-  else category = "negative";
+  if (isCritical) {
+    // Critical participants: 70% negative, 25% neutral, 5% positive
+    const rand = Math.random();
+    if (rand < 0.7) category = "negative";
+    else if (rand < 0.95) category = "neutral";
+    else category = "positive";
+  } else {
+    // Regular participants: 70% neutral, 20% positive, 10% negative
+    const rand = Math.random();
+    if (rand < 0.7) category = "neutral";
+    else if (rand < 0.9) category = "positive";
+    else category = "negative";
+  }
 
   const tags = [];
   // Pick 1-2 tags from the category
@@ -133,19 +191,39 @@ const seedMockWorkLogs = async () => {
     name: String(doc.data()?.name ?? "Participant"),
   }));
 
+  // Create a set of critical participant IDs for quick lookup
+  const criticalParticipantIds = new Set(
+    mockParticipants
+      .filter((p) => CRITICAL_PARTICIPANT_NAMES.includes(p.name))
+      .map((p) => p.id)
+  );
+
+  console.log(`📊 Found ${criticalParticipantIds.size} critical participants out of ${mockParticipants.length} total.`);
+
   // 3. Generate new logs
   console.log(`🌱 Generating ${WORK_LOG_COUNT} new mock work logs...`);
   const logs = Array.from({ length: WORK_LOG_COUNT }).map(() => {
     const participant = randomPick(mockParticipants);
     const role = randomPick([...ROLES]);
+    const isCritical = criticalParticipantIds.has(participant.id);
     
-    // Skew hours positively: Mostly 6-8 hours
-    let hours;
-    const hourRand = Math.random();
-    if (hourRand < 0.7) hours = Number((randomInt(6, 8) + randomInt(0, 3) * 0.25).toFixed(2)); // 6-8.75
-    else hours = Number((randomInt(4, 6) + randomInt(0, 3) * 0.25).toFixed(2)); // 4-6.75
+    // Hours distribution based on participant type
+    let hours: number;
+    if (isCritical) {
+      // Critical participants: Lower hours, more variance
+      const hourRand = Math.random();
+      if (hourRand < 0.6) hours = Number((randomInt(4, 5.5) + randomInt(0, 2) * 0.25).toFixed(2)); // 4-6 hours
+      else if (hourRand < 0.85) hours = Number((randomInt(5.5, 6.5) + randomInt(0, 2) * 0.25).toFixed(2)); // 5.5-7 hours
+      else hours = Number((randomInt(6.5, 7.5) + randomInt(0, 1) * 0.25).toFixed(2)); // 6.5-7.75 hours
+    } else {
+      // Regular participants: Mostly neutral hours (6-8 hours)
+      const hourRand = Math.random();
+      if (hourRand < 0.75) hours = Number((randomInt(6, 8) + randomInt(0, 3) * 0.25).toFixed(2)); // 6-8.75 hours
+      else if (hourRand < 0.9) hours = Number((randomInt(5, 6) + randomInt(0, 3) * 0.25).toFixed(2)); // 5-6.75 hours
+      else hours = Number((randomInt(8, 8.5) + randomInt(0, 1) * 0.25).toFixed(2)); // 8-8.75 hours (positive)
+    }
 
-    const { tags, note } = generateTagsAndNotes();
+    const { tags, note } = generateTagsAndNotes(isCritical);
     const workDate = randomDateInRange(90);
 
     return {
@@ -164,6 +242,7 @@ const seedMockWorkLogs = async () => {
 
   // 4. Batch write
   const batchSize = 500;
+  let written = 0;
   for (let i = 0; i < logs.length; i += batchSize) {
     const batch = db.batch();
     const slice = logs.slice(i, i + batchSize);
@@ -172,10 +251,13 @@ const seedMockWorkLogs = async () => {
       batch.set(ref, log);
     });
     await batch.commit();
-    process.stdout.write(".");
+    written += slice.length;
+    process.stdout.write(`\r📝 Written ${written}/${WORK_LOG_COUNT} logs...`);
   }
 
   console.log(`\n✅ Seeded ${WORK_LOG_COUNT} mock work logs.`);
+  console.log(`   - Critical participant logs: ~${Math.round(WORK_LOG_COUNT * (criticalParticipantIds.size / mockParticipants.length))}`);
+  console.log(`   - Regular participant logs: ~${Math.round(WORK_LOG_COUNT * ((mockParticipants.length - criticalParticipantIds.size) / mockParticipants.length))}`);
 };
 
 seedMockWorkLogs().catch((error) => {

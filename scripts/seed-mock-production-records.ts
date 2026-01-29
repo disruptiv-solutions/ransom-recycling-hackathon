@@ -1,5 +1,6 @@
 /**
  * Seed mock production records for demo mode.
+ * Updated to generate more data with neutral/positive trends and a few critical participants.
  * Run with: npx tsx scripts/seed-mock-production-records.ts
  */
 
@@ -11,7 +12,15 @@ config({ path: resolve(process.cwd(), ".env.local") });
 
 import { getFirebaseAdminDb } from "../src/lib/firebase/admin.js";
 
-const PRODUCTION_COUNT = 1000;
+const PRODUCTION_COUNT = 5000; // Increased from 1000
+
+// Critical participants (will have consistently lower production)
+const CRITICAL_PARTICIPANT_NAMES = [
+  "Marcus Thompson",
+  "Jordan Smith",
+  "Devon Roberts",
+];
+
 const CUSTOMERS = [
   "Donation Box",
   "Ophthalmologist in Fairhope",
@@ -21,6 +30,9 @@ const CUSTOMERS = [
   "Retail Partner",
   "Corporate Partner",
   "Neighborhood Collection",
+  "Medical Center",
+  "University Campus",
+  "Business District",
   "",
   "",
   "",
@@ -31,6 +43,8 @@ const CONTAINER_TYPES = [
   "TRASH CAN (8 LBS)",
   "BLUE BIN (436 LBS)",
   "BLACK DONATION BIN (175 LBS)",
+  "PALLET BOX (120 LBS)",
+  "RECYCLING BIN (45 LBS)",
   "",
 ];
 
@@ -98,6 +112,15 @@ const seedMockProductionRecords = async () => {
     name: String(doc.data()?.name ?? "Participant"),
   }));
 
+  // Create a set of critical participant IDs for quick lookup
+  const criticalParticipantIds = new Set(
+    mockParticipants
+      .filter((p) => CRITICAL_PARTICIPANT_NAMES.includes(p.name))
+      .map((p) => p.id)
+  );
+
+  console.log(`📊 Found ${criticalParticipantIds.size} critical participants out of ${mockParticipants.length} total.`);
+
   const materialPrices = priceSnap.docs.map((doc) => {
     const data = doc.data() ?? {};
     return {
@@ -114,16 +137,35 @@ const seedMockProductionRecords = async () => {
   const records = Array.from({ length: PRODUCTION_COUNT }).map(() => {
     const participant = randomPick(mockParticipants);
     const price = randomPick(materialPrices);
+    const isCritical = criticalParticipantIds.has(participant.id);
     
-    // Skew weights positively (slightly higher averages)
-    let weight;
+    // Weight distribution based on participant type
+    let weight: number;
     if (price.unit === "each") {
-      weight = randomInt(5, 50); // Higher range for 'each'
+      if (isCritical) {
+        // Critical participants: Lower production (5-25 each)
+        weight = randomInt(5, 25);
+      } else {
+        // Regular participants: Neutral range (15-45 each)
+        const rand = Math.random();
+        if (rand < 0.7) weight = randomInt(15, 35); // Most common: 15-35
+        else if (rand < 0.9) weight = randomInt(35, 45); // Positive: 35-45
+        else weight = randomInt(10, 20); // Lower: 10-20
+      }
     } else {
-      // For lbs, skew towards higher weights
-      const rand = Math.random();
-      if (rand < 0.7) weight = Number((randomInt(50, 250) + Math.random()).toFixed(2)); // Higher weights
-      else weight = Number((randomInt(10, 80) + Math.random()).toFixed(2)); // Lower weights
+      // For lbs
+      if (isCritical) {
+        // Critical participants: Lower weights (10-100 lbs)
+        const rand = Math.random();
+        if (rand < 0.7) weight = Number((randomInt(10, 60) + Math.random()).toFixed(2)); // Lower weights
+        else weight = Number((randomInt(60, 100) + Math.random()).toFixed(2)); // Occasional higher
+      } else {
+        // Regular participants: Neutral distribution (50-200 lbs)
+        const rand = Math.random();
+        if (rand < 0.7) weight = Number((randomInt(50, 150) + Math.random()).toFixed(2)); // Most common: 50-150
+        else if (rand < 0.9) weight = Number((randomInt(150, 250) + Math.random()).toFixed(2)); // Positive: 150-250
+        else weight = Number((randomInt(30, 80) + Math.random()).toFixed(2)); // Lower: 30-80
+      }
     }
 
     const value = Number((weight * price.pricePerUnit).toFixed(2));
@@ -152,6 +194,7 @@ const seedMockProductionRecords = async () => {
 
   // 4. Batch write
   const batchSize = 500;
+  let written = 0;
   for (let i = 0; i < records.length; i += batchSize) {
     const batch = db.batch();
     const slice = records.slice(i, i + batchSize);
@@ -160,10 +203,13 @@ const seedMockProductionRecords = async () => {
       batch.set(ref, record);
     });
     await batch.commit();
-    process.stdout.write(".");
+    written += slice.length;
+    process.stdout.write(`\r📝 Written ${written}/${PRODUCTION_COUNT} records...`);
   }
 
   console.log(`\n✅ Seeded ${PRODUCTION_COUNT} mock production records.`);
+  console.log(`   - Critical participant records: ~${Math.round(PRODUCTION_COUNT * (criticalParticipantIds.size / mockParticipants.length))}`);
+  console.log(`   - Regular participant records: ~${Math.round(PRODUCTION_COUNT * ((mockParticipants.length - criticalParticipantIds.size) / mockParticipants.length))}`);
 };
 
 seedMockProductionRecords().catch((error) => {
