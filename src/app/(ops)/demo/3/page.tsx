@@ -305,7 +305,7 @@ export default function DemoPage3() {
 
       {/* AI Chat Sidebar */}
       {isAgentOpen && (
-        <div className="fixed right-0 top-0 bottom-0 z-50 hidden md:block">
+        <div className="fixed right-0 top-[73px] bottom-0 z-50 hidden md:block">
           <AgentPanel onClose={() => setIsAgentOpen(false)} />
         </div>
       )}
